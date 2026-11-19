@@ -1,4 +1,53 @@
-.app-shell{min-height:100vh;background:var(--surface)}
-.app-main{min-width:0;margin-left:78px;min-height:100vh}
-.page-content{padding:30px 32px 48px}
-@media(max-width:768px){.app-main{margin-left:0}.page-content{padding:22px 16px 36px}}
+
+/* ========================================
+   ESTRUTURA GERAL
+======================================== */
+
+.app-shell {
+  min-height: 100vh;
+
+  background: var(--surface);
+}
+
+/* ========================================
+   CONTEÚDO PRINCIPAL
+======================================== */
+
+.app-main {
+  min-width: 0;
+  min-height: 100vh;
+
+  margin-left: 78px;
+
+  transition: margin-left 0.3s ease;
+}
+
+/* Quando o menu estiver expandido */
+
+.app-shell.menu-expanded .app-main {
+  margin-left: 245px;
+}
+
+/* ========================================
+   CONTEÚDO DAS PÁGINAS
+======================================== */
+
+.page-content {
+  padding: 30px 32px 48px;
+}
+
+/* ========================================
+   RESPONSIVIDADE
+======================================== */
+
+@media (max-width: 768px) {
+
+  .app-main,
+  .app-shell.menu-expanded .app-main {
+    margin-left: 0;
+  }
+
+  .page-content {
+    padding: 22px 16px 36px;
+  }
+}

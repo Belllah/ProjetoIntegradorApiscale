@@ -17,7 +17,7 @@ export default function Header({ onMenuClick }) {
       <button className="mobile-menu-button" onClick={onMenuClick} aria-label="Abrir menu"><i className="bi bi-list" /></button>
       <div className="header-heading"><span className="header-eyebrow">APISCALE</span><h1>{title}</h1><p>{subtitle}</p></div>
       <div className="header-actions">
-        <button className="header-icon" aria-label="Notificações"><i className="bi bi-bell" /><span className="notification-dot" /></button>
+        <button className="header-icon" aria-label="Notificações"><i className="bi bi-moon" /></button>
         <button className="user-avatar" aria-label="Perfil do usuário">IS</button>
       </div>
     </header>

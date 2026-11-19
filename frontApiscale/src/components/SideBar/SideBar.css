@@ -1,11 +1,391 @@
-.sidebar{position:fixed;inset:0 auto 0 0;width:78px;background:var(--primary);display:flex;flex-direction:column;align-items:center;z-index:1000;padding:16px 9px;transition:width .25s ease}
-.sidebar-brand{height:78px;width:58px;display:grid;place-items:center;margin-bottom:24px}
-.sidebar-brand img{width:52px;height:52px;object-fit:contain}
-.sidebar-nav{display:flex;flex-direction:column;gap:12px;width:100%}
-.sidebar-link{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;gap:12px;color:#fff;text-decoration:none;background:#087cf2;font-size:24px;transition:.2s;overflow:hidden}
-.sidebar-link:hover,.sidebar-link.active{background:#457cff;box-shadow:0 0 0 3px rgba(255,255,255,.15)}
-.sidebar-link span{display:none;font-size:14px;font-weight:600;white-space:nowrap}
-.sidebar-bottom{margin-top:auto;color:#dce8ff;font-size:10px;display:flex;align-items:center;gap:5px}
-.sidebar-status-dot{width:7px;height:7px;border-radius:50%;background:#35d39a}
-.sidebar-backdrop{display:none}
-@media(max-width:768px){.sidebar{transform:translateX(-100%);width:245px;align-items:stretch;padding:16px;box-shadow:12px 0 30px #07132b55}.sidebar.sidebar-open{transform:translateX(0)}.sidebar-brand{width:100%;justify-content:flex-start;padding-left:12px}.sidebar-nav{gap:8px}.sidebar-link{width:100%;height:48px;border-radius:12px;justify-content:flex-start;padding:0 16px;font-size:19px}.sidebar-link span{display:inline}.sidebar-bottom{padding:14px}.sidebar-backdrop.visible{display:block;position:fixed;inset:0;background:#07132b88;border:0;z-index:999}}
+
+/* ========================================
+   SIDEBAR - ESTRUTURA PRINCIPAL
+======================================== */
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+
+  width: 78px;
+  height: 100vh;
+
+  background: var(--primary);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  padding: 16px 9px;
+
+  z-index: 1000;
+
+  overflow: visible;
+
+  transition:
+    width 0.3s ease,
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* ========================================
+   LOGO E BOTÃO DE EXPANSÃO
+======================================== */
+
+.sidebar-brand {
+  width: 60px;
+  min-height: 72px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  padding: 8px;
+
+  margin-bottom: 28px;
+
+  background: transparent;
+  border: none;
+  border-radius: 14px;
+
+  cursor: pointer;
+
+  transition: all 0.3s ease;
+}
+
+.sidebar-brand img {
+  width: 190px;
+  height: auto;
+  max-height: 65px;
+  object-fit: contain;
+
+  flex-shrink: 0;
+
+  transition:
+    transform 0.3s ease,
+    filter 0.3s ease;
+}
+
+.sidebar-brand span {
+  display: none;
+
+  color: #fff;
+  font-family: 'Georgia', serif;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 3px;
+
+  white-space: nowrap;
+}
+
+/* Brilho discreto ao passar o mouse */
+
+.sidebar-brand:hover img {
+  filter: drop-shadow(0 0 7px rgba(69, 124, 255, 0.8));
+  transform: scale(1.06);
+}
+
+/* Logo selecionada */
+
+.sidebar-expanded .sidebar-brand {
+  width: 100%;
+  justify-content: flex-start;
+
+  padding-left: 8px;
+}
+
+.sidebar-expanded .sidebar-brand img {
+  filter: drop-shadow(0 0 6px rgba(69, 124, 255, 0.6));
+}
+
+.sidebar-expanded .sidebar-brand span {
+  display: block;
+}
+
+/* ========================================
+   NAVEGAÇÃO
+======================================== */
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  gap: 12px;
+
+  width: 100%;
+}
+
+/* Botões recolhidos */
+
+.sidebar-link {
+  position: relative;
+
+  width: 50px;
+  height: 50px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 12px;
+
+  border-radius: 50%;
+
+  color: #fff;
+  background: #087cf2;
+
+  text-decoration: none;
+
+  font-size: 23px;
+
+  transition:
+    width 0.3s ease,
+    height 0.3s ease,
+    border-radius 0.3s ease,
+    background 0.25s ease,
+    color 0.25s ease,
+    box-shadow 0.25s ease;
+
+  overflow: visible;
+}
+
+.sidebar-link i {
+  flex-shrink: 0;
+  transition: transform 0.25s ease;
+  color: #fff;
+}
+
+.sidebar-link span {
+  display: none;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Hover dos botões */
+
+.sidebar-link:hover {
+  background: #ffffff;
+  color: #457cff;
+  box-shadow: 0 0 12px rgba(69, 124, 255, 0.4);
+}
+
+.sidebar-link:hover i {
+  transform: scale(1.1);
+  color: #457cff;
+}
+
+/* Página selecionada */
+
+.sidebar-link.active {
+  background: #ffffff;
+  color: #457cff;
+
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.18),
+    0 0 12px rgba(69, 124, 255, 0.45);
+}
+.sidebar-link.active i{
+    color: #457cff;
+}
+
+/* ========================================
+   NOME DOS ITENS - MENU RECOLHIDO
+======================================== */
+
+.sidebar-link::after {
+  content: attr(data-label);
+
+  position: absolute;
+
+  left: calc(100% + 12px);
+  top: 50%;
+
+  transform: translate(-8px, -50%);
+
+  padding: 9px 14px;
+
+  border-radius: 8px;
+
+  background: #13293d;
+  color: #fff;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  white-space: nowrap;
+
+  opacity: 0;
+  visibility: hidden;
+
+  pointer-events: none;
+
+  transition: 0.2s ease;
+
+  z-index: 1100;
+}
+
+.sidebar:not(.sidebar-expanded) .sidebar-link:hover::after {
+  opacity: 1;
+  visibility: visible;
+
+  transform: translate(0, -50%);
+}
+
+/* ========================================
+   MENU EXPANDIDO
+======================================== */
+
+.sidebar-expanded {
+  width: 245px;
+  align-items: stretch;
+
+  padding: 16px 12px;
+
+  box-shadow: 8px 0 25px rgba(7, 19, 43, 0.15);
+}
+
+.sidebar-expanded .sidebar-nav {
+  align-items: stretch;
+  gap: 12px;
+}
+
+.sidebar-expanded .sidebar-link {
+  width: 100%;
+  height: 48px;
+
+  border-radius: 11px;
+
+  justify-content: flex-start;
+
+  padding: 0 16px;
+
+  font-size: 21px;
+}
+
+/* Nomes aparecem permanentemente */
+
+.sidebar-expanded .sidebar-link span {
+  display: inline;
+}
+
+/* Intercalação das cores */
+
+
+
+.sidebar-expanded .sidebar-link:nth-child(odd) {
+  background: #087cf2;
+}
+
+/* Hover no menu expandido */
+
+.sidebar-expanded .sidebar-link:hover {
+  background: #ffffff;
+  transform: translateX(3px);
+
+  box-shadow: 0 3px 12px rgba(7, 19, 43, 0.2);
+}
+
+/* Item selecionado */
+
+.sidebar-expanded .sidebar-link.active {
+  background: #ffffff;
+
+  box-shadow:
+    inset 3px 0 #548aff,
+    0 0 12px rgb(113, 153, 247);
+}
+
+/* Remove tooltip quando expandido */
+
+.sidebar-expanded .sidebar-link::after {
+  display: none;
+}
+/* ========================================
+   FUNDO DO MENU MOBILE
+======================================== */
+
+.sidebar-backdrop {
+  display: none;
+  border: 0;
+}
+
+/* ========================================
+   RESPONSIVIDADE
+======================================== */
+
+@media (max-width: 768px) {
+
+  .sidebar {
+    width: 245px;
+
+    align-items: stretch;
+
+    padding: 16px;
+
+    transform: translateX(-100%);
+
+    box-shadow: 12px 0 30px rgba(7, 19, 43, 0.35);
+  }
+
+  .sidebar.sidebar-expanded {
+    transform: translateX(0);
+  }
+
+  .sidebar-brand {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .sidebar-brand span {
+    display: block;
+  }
+
+  .sidebar-nav {
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .sidebar-link {
+    width: 100%;
+    height: 48px;
+
+    border-radius: 11px;
+
+    justify-content: flex-start;
+
+    padding: 0 16px;
+  }
+
+  .sidebar-link span {
+    display: inline;
+  }
+
+  .sidebar-link::after {
+    display: none;
+  }
+
+  .sidebar-bottom {
+    justify-content: flex-start;
+    padding: 0 12px;
+  }
+
+  .sidebar-bottom span:last-child {
+    display: inline;
+  }
+
+  .sidebar-backdrop.visible {
+    display: block;
+
+    position: fixed;
+    inset: 0;
+
+    background: rgba(7, 19, 43, 0.55);
+
+    z-index: 999;
+
+    cursor: pointer;
+  }
+}
