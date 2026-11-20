@@ -1,0 +1,497 @@
+/* =========================================
+   PÁGINA DO MASCOTE
+========================================= */
+
+.mascote-page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  color: #132d45;
+}
+
+.mascote-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mascote-kicker {
+  display: block;
+  color: #457cff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  margin-bottom: 6px;
+}
+
+.mascote-heading .page-title {
+  margin-bottom: 5px;
+}
+
+.mascote-heading .page-subtitle {
+  margin: 0;
+}
+
+/* =========================================
+   PALCO DO DRAGÃO
+========================================= */
+
+.dragon-stage {
+  position: relative;
+  width: 100%;
+  min-height: 540px;
+  height: clamp(480px, 53vw, 650px);
+  overflow: hidden;
+  border-radius: 24px;
+  background: #0b2038;
+  border: 1px solid #244a77;
+  box-shadow: 0 15px 40px rgba(15, 39, 75, .15);
+  isolation: isolate;
+}
+
+/* Vídeo */
+
+.dragon-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  z-index: -2;
+}
+
+/* Escurecimento nas extremidades para leitura */
+
+.dragon-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(5, 20, 39, .55) 0%,
+      transparent 35%,
+      transparent 65%,
+      rgba(5, 20, 39, .65) 100%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(5, 20, 39, .25),
+      transparent 35%,
+      transparent 65%,
+      rgba(5, 20, 39, .25)
+    );
+}
+
+/* =========================================
+   PAINÉIS FLUTUANTES
+========================================= */
+
+.dragon-floating-info {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  right: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.dragon-glass-card {
+  pointer-events: auto;
+  padding: 19px 21px;
+  border-radius: 17px;
+
+  background: rgba(10, 34, 60, .76);
+  border: 1px solid rgba(160, 205, 255, .27);
+
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, .16),
+    inset 0 1px 0 rgba(255, 255, 255, .09);
+
+  color: #fff;
+  transition: background .25s ease, transform .25s ease;
+}
+
+.dragon-glass-card:hover {
+  background: rgba(13, 43, 75, .88);
+  transform: translateY(-3px);
+}
+
+.dragon-identification {
+  width: 245px;
+}
+
+.glass-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #a9d3ff;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .8px;
+}
+
+.glass-label i {
+  color: #60a5fa;
+  font-size: 14px;
+}
+
+.dragon-identification h1 {
+  font-size: 29px;
+  font-weight: 800;
+  margin: 13px 0 2px;
+  color: #fff;
+}
+
+.dragon-identification p {
+  font-size: 12px;
+  color: #a9d3ff;
+  margin: 0 0 13px;
+}
+
+.dragon-rarity {
+  display: inline-block;
+  padding: 6px 11px;
+  border-radius: 20px;
+  background: rgba(69, 124, 255, .22);
+  border: 1px solid rgba(100, 160, 255, .3);
+  color: #d7eaff;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Painel de nível */
+
+.dragon-level-card {
+  width: 245px;
+}
+
+.dragon-level-number {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin: 12px 0 17px;
+}
+
+.dragon-level-number strong {
+  font-size: 38px;
+  line-height: 1;
+  color: #fff;
+}
+
+.dragon-level-number span {
+  font-size: 9px;
+  font-weight: 800;
+  color: #9bb9d8;
+  letter-spacing: 1px;
+}
+
+.dragon-mini-xp > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 10px;
+  color: #b9d5ef;
+  margin-bottom: 8px;
+}
+
+.dragon-mini-xp strong {
+  color: #fff;
+}
+
+.dragon-mini-progress {
+  height: 6px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: rgba(255,255,255,.16);
+}
+
+.dragon-mini-progress div {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #457cff, #31b4ff);
+  transition: width .5s ease;
+}
+
+/* =========================================
+   RODAPÉ DO VÍDEO
+========================================= */
+
+.dragon-stage-footer {
+  position: absolute;
+  bottom: 22px;
+  left: 25px;
+  right: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  z-index: 2;
+}
+
+.dragon-stage-footer > div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #e5f2ff;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.dragon-stage-footer > div i {
+  color: #60a5fa;
+}
+
+.dragon-stage-status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #83c5ff;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+
+
+/* =========================================
+   EVOLUÇÃO
+========================================= */
+
+.dragon-evolution-card {
+  padding: 24px;
+  border-radius: 18px;
+  background: linear-gradient(120deg, #fff, #edf3ff);
+  border: 1px solid #dce7fb;
+  box-shadow: 0 8px 25px rgba(27,57,173,.05);
+}
+
+.evolution-heading,
+.evolution-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+.evolution-heading h3 {
+  font-size: 17px;
+  font-weight: 750;
+  color: #173553;
+  margin: 0;
+}
+
+.evolution-percentage {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1b39ad;
+}
+
+.evolution-details {
+  margin: 19px 0 10px;
+  font-size: 11px;
+  color: #71849c;
+}
+
+.evolution-details span:last-child {
+  color: #457cff;
+  font-weight: 700;
+}
+
+.dragon-evolution-progress {
+  height: 10px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #dce6f6;
+}
+
+.dragon-evolution-progress div {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    #1b39ad,
+    #457cff,
+    #1b88e0
+  );
+  transition: width .6s ease;
+}
+
+.dragon-evolution-card > p {
+  margin: 13px 0 0;
+  font-size: 14px;
+  color: #71849c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.dragon-evolution-card > p i {
+  color: #457cff;
+}
+
+/* =========================================
+   INFORMAÇÕES ADICIONAIS
+========================================= */
+
+.dragon-details-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
+}
+
+.dragon-detail-card {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+  padding: 19px;
+  border: 1px solid #e0e9f7;
+  border-radius: 16px;
+  background: rgba(255,255,255,.88);
+  box-shadow: 0 6px 20px rgba(27,57,173,.04);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.dragon-detail-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(27,57,173,.09);
+}
+
+.detail-icon {
+  flex-shrink: 0;
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: #e5edff;
+  color: #457cff;
+  font-size: 19px;
+}
+
+.detail-icon.teal {
+  background: #ddf4f2;
+  color: #009694;
+}
+
+.detail-icon.purple {
+  background: #eee9ff;
+  color: #7860d8;
+}
+
+.dragon-detail-card small,
+.dragon-detail-card strong {
+  display: block;
+}
+
+.dragon-detail-card small {
+  color: #8292a8;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: .7px;
+  margin-bottom: 5px;
+}
+
+.dragon-detail-card strong {
+  color: #173553;
+  font-size: 12px;
+}
+
+/* =========================================
+   RESPONSIVIDADE
+========================================= */
+
+@media (max-width: 900px) {
+  .dragon-stage {
+    min-height: 480px;
+    height: 55vw;
+  }
+
+  .dragon-floating-info {
+    top: 17px;
+    left: 17px;
+    right: 17px;
+    gap: 10px;
+  }
+
+  .dragon-glass-card {
+    width: 210px;
+    padding: 15px;
+  }
+}
+
+@media (max-width: 600px) {
+  .dragon-stage {
+    height: auto;
+    min-height: 620px;
+    border-radius: 18px;
+  }
+
+  .dragon-video {
+    object-fit: contain;
+    object-position: center;
+  }
+
+  .dragon-floating-info {
+    top: 15px;
+    left: 15px;
+    right: 15px;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .dragon-glass-card {
+    width: min(100%, 230px);
+    padding: 12px 15px;
+  }
+
+  .dragon-identification h1 {
+    font-size: 23px;
+    margin-top: 7px;
+  }
+
+  .dragon-identification p {
+    margin-bottom: 8px;
+  }
+
+  .dragon-level-number {
+    margin: 7px 0 10px;
+  }
+
+  .dragon-level-number strong {
+    font-size: 28px;
+  }
+
+  .dragon-stage-footer {
+    bottom: 15px;
+    left: 15px;
+    right: 15px;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .dragon-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .evolution-details {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .dragon-evolution-card {
+    padding: 18px;
+  }
+}

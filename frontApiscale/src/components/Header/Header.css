@@ -1,7 +1,7 @@
 .top-header{min-height:104px;background:#e9edf9;display:flex;align-items:center;justify-content:space-between;padding:18px 32px;gap:20px;border-bottom:1px solid #dce4f3}
 .header-eyebrow{font-size:10px;letter-spacing:2px;font-weight:800;color:var(--primary)}
 .header-heading h1{font-size:25px;font-weight:800;color:#101828;margin:2px 0}
-.header-heading p{margin:0;color:#667085;font-size:13px}
+.header-heading p{margin:0;color:#667085;font-size:14px}
 .header-actions{display:flex;align-items:center;gap:14px}
 .header-icon,.user-avatar,.mobile-menu-button{border:0;display:grid;place-items:center}
 .header-icon{width:44px;height:44px;border-radius:50%;background:#000641;color:white;font-size:19px;position:relative}

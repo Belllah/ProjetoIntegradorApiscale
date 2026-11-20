@@ -1,0 +1,34 @@
+/* ========================================
+   GRÁFICOS - APISCALE
+======================================== */
+
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 260px;
+  margin-top: 18px;
+}
+
+/* Gráfico de rosca */
+.doughnut-container {
+  max-width: 440px;
+  height: 260px;
+  margin: 18px auto 0;
+}
+
+/* Ajustes para telas menores */
+@media (max-width: 768px) {
+  .chart-container {
+    height: 230px;
+  }
+
+  .doughnut-container {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .chart-container {
+    height: 210px;
+  }
+}

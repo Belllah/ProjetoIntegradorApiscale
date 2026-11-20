@@ -10,7 +10,18 @@
   width: 78px;
   height: 100vh;
 
-  background: var(--primary);
+  background:
+    radial-gradient(
+      circle at 90% 10%,
+      rgba(69, 124, 255, .45),
+      transparent 38%
+    ),
+    linear-gradient(
+      180deg,
+      #13293D,
+      #1B39AD 65%,
+      #247BA0
+    );
 
   display: flex;
   flex-direction: column;
