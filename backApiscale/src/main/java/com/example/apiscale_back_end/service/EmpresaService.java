@@ -35,6 +35,7 @@ public class EmpresaService {
         empresaExistente.setEmail(dadosAtualizados.getEmail());
         empresaExistente.setTelefone(dadosAtualizados.getTelefone());
         empresaExistente.setEndereco(dadosAtualizados.getEndereco());
+        empresaExistente.setSenha(dadosAtualizados.getSenha());
 
         return empresaRepository.save(empresaExistente);
     }

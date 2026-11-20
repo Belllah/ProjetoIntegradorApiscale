@@ -48,6 +48,7 @@ public class GerenteService {
         gerenteExistente.setEmail(dadosAtualizados.getEmail());
         gerenteExistente.setTelefone(dadosAtualizados.getTelefone());
         gerenteExistente.setDataNascimento(dadosAtualizados.getDataNascimento());
+        gerenteExistente.setSenha(dadosAtualizados.getSenha());
 
         return gerenteRepository.save(gerenteExistente);
     }

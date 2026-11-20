@@ -45,6 +45,7 @@ public class FuncionarioService {
         funcionarioExistente.setEmail(dadosAtualizados.getEmail());
         funcionarioExistente.setTelefone(dadosAtualizados.getTelefone());
         funcionarioExistente.setDataNascimento(dadosAtualizados.getDataNascimento());
+        funcionarioExistente.setSenha(dadosAtualizados.getSenha());
 
         return funcionarioRepository.save(funcionarioExistente);
     }
