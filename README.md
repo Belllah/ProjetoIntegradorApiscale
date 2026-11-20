@@ -54,6 +54,6 @@ Tiago Maciel dos Santos
 
 ## Documentação
 
-Os requisitos, casos de uso, diagramas e a modelagem completa do sistema estão reunidos no relatório disponível neste repositório.
+Os requisitos, casos de uso, diagramas e a modelagem completa do sistema estão reunidos no [Relatório Completo do Projeto (PDF)](./C%C3%B3pia%20de%20Relat%C3%B3rio%20PJI.pdf).
 
 
