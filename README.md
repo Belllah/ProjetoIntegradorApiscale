@@ -35,17 +35,21 @@ Versão inicial (pasta Site):
 
    text
 ProjetoIntegradorApiscale/
-├── backApiscale/       # API REST em Java e Spring Boot
-├── frontApiscale/      # Interface web em React
-├── Site/               # Site
-└── README.md           # Apresentação e instruções do projeto
+├── backApiscale/     
+├── frontApiscale/      
+├── Site/              
+└── README.md           
 
 ## Integrantes
 
 Gabriel Pinheiro
+
 Isabella de Oliveira
+
 Millena Santos Campioto
+
 Pedro Silva Rocha 
+
 Tiago Maciel dos Santos
 
 ## Documentação
