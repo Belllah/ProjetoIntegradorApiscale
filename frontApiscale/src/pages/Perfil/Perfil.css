@@ -67,7 +67,7 @@
   border: 3px solid var(--profile-tint);
 }
 
-.profile-avatar-img {
+/* .profile-avatar-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -107,7 +107,7 @@
 
 .btn-remove-photo:hover {
   text-decoration: underline;
-}
+} */
 
 .profile-identity-info {
   min-width: 0;

@@ -5,7 +5,7 @@ import './Perfil.css'
 const initialProfile = {
   name: 'Isabella',
   initials: 'IS',
-  photoUrl: '',
+//  photoUrl: '',
   role: 'Analista de Operações',
   department: 'Operações & Processos • Apiscale',
   location: 'Indaiatuba, SP',
@@ -75,8 +75,15 @@ export default function Perfil() {
     setDraft(profile)
     setIsEditing(false)
   }
-
+  
+  // tira a foto de perfil
   const handleChange = (e) => {
+    const { name, value } = e.target
+    setDraft((prev) => ({ ...prev, [name]: value }))
+  }
+  // tira a foto de perfil
+
+/*   const handleChange = (e) => {
     const { name, value } = e.target
     setDraft((prev) => ({ ...prev, [name]: value }))
   }
@@ -92,7 +99,7 @@ export default function Perfil() {
       }
     }
     reader.readAsDataURL(file)
-  }
+  } */
 
   const handleRemovePhoto = () => {
     setDraft((prev) => ({ ...prev, photoUrl: '' }))
@@ -148,7 +155,7 @@ export default function Perfil() {
     navigate('/sair')
   }
 
-  const activePhoto = isEditing ? draft.photoUrl : profile.photoUrl
+  // const activePhoto = isEditing ? draft.photoUrl : profile.photoUrl
   const activeInitials = isEditing ? draft.initials : profile.initials
 
   return (
@@ -165,19 +172,19 @@ export default function Perfil() {
         <div className="profile-identity">
           <div className="profile-avatar-wrapper">
             <div className="profile-avatar-lg">
-              {activePhoto ? (
+              {/* {activePhoto ? (
                 <img src={activePhoto} alt={`Foto de ${profile.name}`} className="profile-avatar-img" />
-              ) : (
+              ) : ( */}
                 <span>{activeInitials}</span>
-              )}
+              {/* )} */}
             </div>
 
-            {isEditing && (
+            {/* {isEditing && (
               <label className="profile-avatar-edit-badge" title="Alterar foto de perfil">
                 <i className="bi bi-camera-fill" />
                 <input type="file" accept="image/*" onChange={handlePhotoChange} hidden />
               </label>
-            )}
+            )} */}
           </div>
 
           <div className="profile-identity-info">
@@ -197,11 +204,11 @@ export default function Perfil() {
               <span><i className="bi bi-geo-alt" /> {profile.location}</span>
             </p>
 
-            {isEditing && draft.photoUrl && (
+            {/* {isEditing && draft.photoUrl && (
               <button type="button" className="btn-remove-photo" onClick={handleRemovePhoto}>
                 Remover foto atual
               </button>
-            )}
+            )} */}
           </div>
         </div>
 
