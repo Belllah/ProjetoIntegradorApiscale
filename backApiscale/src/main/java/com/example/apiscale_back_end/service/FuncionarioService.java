@@ -19,7 +19,7 @@ public class FuncionarioService {
     private EmpresaRepository empresaRepository;
     
     public Funcionario salvar(Funcionario funcionario) {
-        if (funcionarioRepository.existsById(funcionario.getCpf())) {
+        if (funcionarioRepository.existsByCpf(funcionario.getCpf())) {
             throw new RuntimeException("Já existe um funcionário cadastrado com esse CPF");
         }
 
@@ -34,24 +34,26 @@ public class FuncionarioService {
         return funcionarioRepository.findAll();
     }
 
-    public Funcionario buscarPorCpf(String cpf) {
-        return funcionarioRepository.findById(cpf).orElseThrow(() -> new RuntimeException("Funcionário não encontrado com este CPF"));
+    public Funcionario buscarPorId(Integer id) {
+        return funcionarioRepository.findById(id).orElseThrow(() -> new RuntimeException("Funcionário não encontrado com este ID"));
     }
 
-    public Funcionario atualizar(String cpf, Funcionario dadosAtualizados) {
-        Funcionario funcionarioExistente = buscarPorCpf(cpf);
+    public Funcionario atualizar(Integer id, Funcionario dadosAtualizados) {
+        Funcionario funcionarioExistente = buscarPorId(id);
 
+        funcionarioExistente.setCpf(dadosAtualizados.getCpf());
         funcionarioExistente.setNome(dadosAtualizados.getNome());
         funcionarioExistente.setEmail(dadosAtualizados.getEmail());
         funcionarioExistente.setTelefone(dadosAtualizados.getTelefone());
         funcionarioExistente.setDataNascimento(dadosAtualizados.getDataNascimento());
+        funcionarioExistente.setCargo(dadosAtualizados.getCargo());
         funcionarioExistente.setSenha(dadosAtualizados.getSenha());
 
         return funcionarioRepository.save(funcionarioExistente);
     }
 
-    public void deletar(String cpf) {
-        Funcionario funcionario = buscarPorCpf(cpf);
+    public void deletar(Integer id) {
+        Funcionario funcionario = buscarPorId(id);
         funcionarioRepository.delete(funcionario);
     }
 }

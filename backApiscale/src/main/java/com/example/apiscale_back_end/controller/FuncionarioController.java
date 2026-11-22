@@ -34,18 +34,19 @@ public class FuncionarioController {
         return funcionarioService.salvar(funcionario);
     }
 
-    @PutMapping("/{cpf}")
-    public Funcionario atualizar(@PathVariable String cpf, @RequestBody Funcionario funcionario){
-        return funcionarioService.atualizar(cpf, funcionario);
+    // O caminho usa o ID numérico que identifica o funcionário.
+    @PutMapping("/{id}")
+    public Funcionario atualizar(@PathVariable Integer id, @RequestBody Funcionario funcionario){
+        return funcionarioService.atualizar(id, funcionario);
     }
 
-    @DeleteMapping("/{cpf}")
-    public void deletar(@PathVariable String cpf) {
-        funcionarioService.deletar(cpf);
+    @DeleteMapping("/{id}")
+    public void deletar(@PathVariable Integer id) {
+        funcionarioService.deletar(id);
     }
 
-    @GetMapping("/{cpf}")
-    public Funcionario buscar(@PathVariable String cpf){
-        return funcionarioService.buscarPorCpf(cpf);
+    @GetMapping("/{id}")
+    public Funcionario buscar(@PathVariable Integer id){
+        return funcionarioService.buscarPorId(id);
     }
 }
