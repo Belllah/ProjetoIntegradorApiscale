@@ -14,12 +14,14 @@ import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import java.time.LocalDateTime;
 
 // Camada que organiza as operações e regras relacionadas às tarefas.
 @Service
 public class TarefaService {
 
-    // Repositories necessários para acessar tarefas e localizar entidades relacionadas.
+    // Repositories necessários para acessar tarefas e localizar entidades
+    // relacionadas.
     private final TarefaRepository tarefaRepository;
     private final FuncionarioRepository funcionarioRepository;
     private final EquipeRepository equipeRepository;
@@ -44,32 +46,39 @@ public class TarefaService {
         return tarefaRepository.findById(id);
     }
 
-    // Cria uma tarefa e associa funcionários e equipe existentes a partir de seus IDs.
+    // Cria uma tarefa e associa funcionários e equipe existentes a partir de seus
+    // IDs.
     public Tarefa criar(TarefaRequest dados) {
         Tarefa tarefa = new Tarefa();
         aplicarDados(tarefa, dados);
+        atualizarDataConclusao(tarefa);
         return tarefaRepository.save(tarefa);
     }
 
-    // Atualiza uma tarefa; Optional vazio indica que o ID da tarefa não foi encontrado.
+    // Atualiza uma tarefa; Optional vazio indica que o ID da tarefa não foi
+    // encontrado.
     public Optional<Tarefa> atualizar(Integer id, TarefaRequest dados) {
         return tarefaRepository.findById(id).map(tarefa -> {
             aplicarDados(tarefa, dados);
+            atualizarDataConclusao(tarefa);
+
             return tarefaRepository.save(tarefa);
         });
     }
 
-    // Copia os dados recebidos e resolve cada chave estrangeira consultando o respectivo repository.
+    // Copia os dados recebidos e resolve cada chave estrangeira consultando o
+    // respectivo repository.
     private void aplicarDados(Tarefa tarefa, TarefaRequest dados) {
         tarefa.setTitulo(dados.getTitulo());
         tarefa.setDescricao(dados.getDescricao());
 
         // Se status ou prioridade não vierem no JSON, preserva os padrões da entidade.
-        if (dados.getStatus() != null) tarefa.setStatus(dados.getStatus());
-        if (dados.getPrioridade() != null) tarefa.setPrioridade(dados.getPrioridade());
+        if (dados.getStatus() != null)
+            tarefa.setStatus(dados.getStatus());
+        if (dados.getPrioridade() != null)
+            tarefa.setPrioridade(dados.getPrioridade());
 
         tarefa.setDataPrazo(dados.getDataPrazo());
-        tarefa.setDataConclusao(dados.getDataConclusao());
 
         // O criador é opcional durante os testes, enquanto o login não está pronto.
         if (dados.getCriadorId() == null) {
@@ -99,6 +108,23 @@ public class TarefaService {
                     .orElseThrow(() -> new ResponseStatusException(
                             HttpStatus.NOT_FOUND, "Equipe não encontrada"));
             tarefa.setEquipe(equipe);
+        }
+    }
+
+    // Controla automaticamente a data de conclusão conforme o status.
+    private void atualizarDataConclusao(Tarefa tarefa) {
+
+        if ("Concluida".equals(tarefa.getStatus())) {
+
+            // Registra a data somente se ainda não existir.
+            if (tarefa.getDataConclusao() == null) {
+                tarefa.setDataConclusao(LocalDateTime.now());
+            }
+
+        } else {
+
+            // Se a tarefa deixar de estar concluída, remove a data.
+            tarefa.setDataConclusao(null);
         }
     }
 

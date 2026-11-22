@@ -1,24 +1,17 @@
-import { Line } from 'react-chartjs-2';
-import './Charts.css';
-import './chartConfig';
 
-// Dados fictícios para demonstração
-const dadosExemplo = {
-  labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
-  valores: [20, 35, 30, 55, 45, 70, 85]
-};
+import { Line } from 'react-chartjs-2'
+import './Charts.css'
+import './chartConfig'
 
 export default function PerformanceChart({ desempenho }) {
 
-  // Utiliza os dados do backend ou os dados de exemplo
-  const dados = desempenho || dadosExemplo;
-
   const data = {
-    labels: dados.labels,
+    labels: desempenho?.labels || [],
+
     datasets: [
       {
-        label: 'Desempenho',
-        data: dados.valores,
+        label: 'Tarefas concluídas',
+        data: desempenho?.valores || [],
 
         borderColor: '#457CFF',
         backgroundColor: 'rgba(69, 124, 255, 0.12)',
@@ -31,10 +24,10 @@ export default function PerformanceChart({ desempenho }) {
         pointBorderColor: '#FFFFFF',
         pointBorderWidth: 2,
         pointRadius: 5,
-        pointHoverRadius: 7
+        pointHoverRadius: 7,
       }
     ]
-  };
+  }
 
   const options = {
     responsive: true,
@@ -44,23 +37,24 @@ export default function PerformanceChart({ desempenho }) {
       legend: {
         display: false
       },
+
       tooltip: {
         backgroundColor: '#0F172A',
         titleColor: '#FFFFFF',
         bodyColor: '#E8F1F2',
         padding: 12,
-        displayColors: false
+        displayColors: false,
       }
     },
 
     scales: {
       y: {
         beginAtZero: true,
-        max: 100,
 
         ticks: {
+          precision: 0,
           color: '#64748B',
-          callback: value => `${value}%`
+          stepSize: 1,
         },
 
         grid: {
@@ -86,11 +80,11 @@ export default function PerformanceChart({ desempenho }) {
         }
       }
     }
-  };
+  }
 
   return (
     <div className="chart-container">
       <Line data={data} options={options} />
     </div>
-  );
+  )
 }

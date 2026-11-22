@@ -750,6 +750,84 @@
   letter-spacing: 1px;
 }
 
+/* ========================================
+   INFORMAÇÕES REAIS DAS TAREFAS
+======================================== */
+
+.dashboard-task-details {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.dashboard-task-status,
+.dashboard-task-priority {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.dashboard-task-status {
+  color: #1B39AD;
+  background: rgba(69, 124, 255, 0.10);
+}
+
+.dashboard-task-priority {
+  color: #52647D;
+  background: #EDF1F7;
+}
+
+.dashboard-empty {
+  color: #64748B;
+  font-size: 13px;
+  padding: 20px 0;
+  text-align: center;
+}
+
+/* Mensagem de erro da API */
+
+.dashboard-error {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  padding: 13px 16px;
+  margin-bottom: 20px;
+
+  border-radius: 12px;
+  border: 1px solid rgba(220, 53, 69, .2);
+
+  background: #FFF1F2;
+  color: #9F1239;
+  font-size: 13px;
+}
+
+.dashboard-error button {
+  border: none;
+  background: transparent;
+  color: #1B39AD;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.dashboard-error button:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 576px) {
+  .dashboard-error {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+
 /* Animação */
 
 @keyframes mascot-float {

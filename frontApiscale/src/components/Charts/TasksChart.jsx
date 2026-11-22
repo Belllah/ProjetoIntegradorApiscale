@@ -1,35 +1,29 @@
-import { Doughnut } from 'react-chartjs-2';
-import './Charts.css';
-import './chartConfig';
 
-// Dados fictícios para demonstração
-const dadosExemplo = {
-  labels: ['Concluídas', 'Em andamento', 'Pendentes'],
-  valores: [18, 4, 6]
-};
+import { Doughnut } from 'react-chartjs-2'
+import './Charts.css'
+import './chartConfig'
 
 export default function TasksChart({ tarefasPorStatus }) {
 
-  // Utiliza os dados recebidos ou os dados de exemplo
-  const dados = tarefasPorStatus || dadosExemplo;
-
   const data = {
-    labels: dados.labels,
+    labels: tarefasPorStatus?.labels || [],
 
     datasets: [
       {
-        data: dados.valores,
+        data: tarefasPorStatus?.valores || [],
 
         backgroundColor: [
           '#1B39AD',
           '#457CFF',
+          '#009694',
           '#960020'
         ],
 
         hoverBackgroundColor: [
           '#142B88',
           '#2865ED',
-          '#e00031'
+          '#007C7A',
+          '#C0002A'
         ],
 
         borderWidth: 3,
@@ -38,7 +32,7 @@ export default function TasksChart({ tarefasPorStatus }) {
         hoverOffset: 8
       }
     ]
-  };
+  }
 
   const options = {
     responsive: true,
@@ -55,6 +49,7 @@ export default function TasksChart({ tarefasPorStatus }) {
           usePointStyle: true,
           pointStyle: 'circle',
           padding: 22,
+
           font: {
             size: 12,
             weight: '500'
@@ -69,11 +64,11 @@ export default function TasksChart({ tarefasPorStatus }) {
         padding: 12
       }
     }
-  };
+  }
 
   return (
     <div className="chart-container doughnut-container">
       <Doughnut data={data} options={options} />
     </div>
-  );
+  )
 }
