@@ -57,6 +57,7 @@ function toTaskView(task) {
     description: task.descricao || '',
     status: task.status,
     priority: task.prioridade,
+    createdAt: task.dataCriacao || null,
     dueDate: task.dataPrazo ? task.dataPrazo.slice(0, 10) : '',
     dataConclusao: task.dataConclusao || null,
     creatorId: task.criador?.id ? String(task.criador.id) : '',
@@ -71,7 +72,7 @@ function toTaskView(task) {
 function formatDueDate(value) {
   if (!value) return 'Sem prazo'
 
-  return new Date(`${value}T12:00:00`).toLocaleDateString('pt-BR', {
+  return new Date(`${value.slice(0, 10)}T12:00:00`).toLocaleDateString('pt-BR', {
     day: '2-digit',
     month: 'short',
   })
@@ -112,7 +113,8 @@ function TaskCard({
       {task.description && <p className="task-card-description">{task.description}</p>}
 
       <div className="task-card-meta">
-        <span><i className="bi bi-calendar3" /> {formatDueDate(task.dueDate)}</span>
+        <span><i className="bi bi-calendar-plus" /> Criada: {formatDueDate(task.createdAt).replace('Sem prazo', 'Sem data')}</span>
+        <span><i className="bi bi-calendar-event" /> Prazo: {formatDueDate(task.dueDate)}</span>
         {task.team && <span><i className="bi bi-people" /> {task.team}</span>}
       </div>
 
