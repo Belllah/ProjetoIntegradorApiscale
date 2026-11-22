@@ -1,52 +1,76 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './Equipe.css'
 
-const initialTeams = [
-  {
-    id: 1,
-    name: 'Operações & Processos',
-    description: 'Acompanhamento de metas mensais, indicadores e relatórios da área.',
-    progress: 75,
-    points: '3.450',
-    members: [
-      { id: 101, name: 'Isabella', role: 'Analista de Operações', streak: 7, points: '1.250', online: true },
-      { id: 102, name: 'Lucas Almeida', role: 'Especialista de Processos', streak: 12, points: '1.400', online: true },
-      { id: 103, name: 'Mariana Costa', role: 'Assistente Administrativo', streak: 4, points: '800', online: false },
-    ],
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+
+async function apiRequest(path) {
+  let response
+
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`)
+  } catch {
+    throw new Error(
+      'Não foi possível conectar ao servidor. Verifique se o Spring Boot está rodando.'
+    )
+  }
+
+  const body = await response.json().catch(() => null)
+
+  if (!response.ok) {
+    throw new Error(
+      body?.message || `Erro ao consultar a API (HTTP ${response.status}).`
+    )
+  }
+
+  return body
+}
+
+const mockMembersPool = [
+  { id: 101, name: 'Isabella', role: 'Analista de Operações', level: 'Nível 4 · Aprendiz', streak: 7, points: '1.250', online: true },
+  { id: 102, name: 'Lucas Almeida', role: 'Especialista de Processos', level: 'Nível 5 · Explorador', streak: 12, points: '1.400', online: true },
+  { id: 103, name: 'Mariana Costa', role: 'Assistente Administrativo', level: 'Nível 3 · Iniciante', streak: 4, points: '800', online: false },
+  { id: 104, name: 'Gabriel Santos', role: 'Coordenador de Atendimento', level: 'Nível 6 · Guardião', streak: 15, points: '1.680', online: true },
+  { id: 105, name: 'Rafael Lima', role: 'Consultor de Relacionamento', level: 'Nível 4 · Aprendiz', streak: 9, points: '1.300', online: true },
+  { id: 106, name: 'Camila Rocha', role: 'Analista de Projetos', level: 'Nível 5 · Explorador', streak: 11, points: '1.520', online: false },
+]
+
+function mapEquipeFromApi(equipe, index, tasks) {
+  const teamTasks = tasks.filter(t => t.equipe?.id === equipe.id)
+  const completedCount = teamTasks.filter(t => t.status === 'Concluida').length
+  const progress = teamTasks.length > 0
+    ? Math.round((completedCount / teamTasks.length) * 100)
+    : (index === 0 ? 75 : 60)
+
+  const empresaLabel = equipe.empresa?.nomeFantasia || equipe.empresa?.razaoSocial || equipe.empresa?.cnpj || 'Apiscale Corporativo'
+
+  const start = (index * 2) % mockMembersPool.length
+  const teamMembers = [
+    mockMembersPool.at(start),
+    mockMembersPool.at((start + 1) % mockMembersPool.length),
+    mockMembersPool.at((start + 2) % mockMembersPool.length),
+  ].filter(Boolean)
+
+  return {
+    id: equipe.id,
+    name: equipe.nomeEquipe,
+    description: `Equipe vinculada à unidade ${empresaLabel}.`,
+    progress,
+    points: String(2400 + (equipe.id || index + 1) * 350),
+    tasksCount: teamTasks.length,
+    members: teamMembers,
     messages: [
-      { id: 1, author: 'Lucas Almeida', text: 'Fechei a revisão dos relatórios semanais!', time: '10:30' },
-      { id: 2, author: 'Isabella', text: 'Ótimo! Já estou atualizando o painel de metas da equipe.', time: '11:15' },
-    ]
-  },
-  {
-    id: 2,
-    name: 'Relacionamento & Sucesso',
-    description: 'Atendimento estratégico, retenção e acompanhamento de clientes.',
-    progress: 60,
-    points: '2.980',
-    members: [
-      { id: 104, name: 'Gabriel Santos', role: 'Coordenador de Atendimento', streak: 15, points: '1.680', online: true },
-      { id: 105, name: 'Rafael Lima', role: 'Consultor de Relacionamento', streak: 9, points: '1.300', online: true },
-    ],
-    messages: [
-      { id: 1, author: 'Gabriel Santos', text: 'Batemos a meta de satisfação desta semana, parabéns time!', time: '09:45' },
+      { id: 1, author: teamMembers.at(0)?.name || 'Isabella', text: `Metas da equipe ${equipe.nomeEquipe} atualizadas!`, time: '10:30' },
     ]
   }
-]
-
-const allCompanyMembers = [
-  { id: 101, name: 'Isabella', role: 'Analista de Operações', team: 'Operações & Processos', level: 'Nível 4 · Aprendiz', streak: 7, points: '1.250', online: true },
-  { id: 102, name: 'Lucas Almeida', role: 'Especialista de Processos', team: 'Operações & Processos', level: 'Nível 5 · Explorador', streak: 12, points: '1.400', online: true },
-  { id: 103, name: 'Mariana Costa', role: 'Assistente Administrativo', team: 'Operações & Processos', level: 'Nível 3 · Iniciante', streak: 4, points: '800', online: false },
-  { id: 104, name: 'Gabriel Santos', role: 'Coordenador de Atendimento', team: 'Relacionamento & Sucesso', level: 'Nível 6 · Guardião', streak: 15, points: '1.680', online: true },
-  { id: 105, name: 'Rafael Lima', role: 'Consultor de Relacionamento', team: 'Relacionamento & Sucesso', level: 'Nível 4 · Aprendiz', streak: 9, points: '1.300', online: true },
-  { id: 106, name: 'Camila Rocha', role: 'Analista de Projetos', team: 'Planejamento & Estratégia', level: 'Nível 5 · Explorador', streak: 11, points: '1.520', online: false },
-]
-
+}
 
 export default function Equipes() {
-  const [teams, setTeams] = useState(initialTeams)
-  const [selectedTeamId, setSelectedTeamId] = useState(initialTeams.at(0).id)
+  const [teams, setTeams] = useState([])
+  const [selectedTeamId, setSelectedTeamId] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState('')
+  const [retryToken, setRetryToken] = useState(0)
+
   const [activeTab, setActiveTab] = useState('minhas-equipes')
   const [searchTerm, setSearchTerm] = useState('')
   const [newMessage, setNewMessage] = useState('')
@@ -54,8 +78,62 @@ export default function Equipes() {
   const [newTeamName, setNewTeamName] = useState('')
   const [newTeamDesc, setNewTeamDesc] = useState('')
   const [selectedMember, setSelectedMember] = useState(null)
+  useEffect(() => {
+    let active = true
 
-  const selectedTeam = teams.find(t => t.id === selectedTeamId) || teams.at(0)
+    async function loadEquipes() {
+      setLoading(true)
+      setErrorMessage('')
+
+      try {
+        const [equipesData, tarefasData] = await Promise.all([
+          apiRequest('/api/equipes'),
+          apiRequest('/api/tarefas').catch(() => [])
+        ])
+
+        if (!Array.isArray(equipesData)) {
+          throw new Error('A resposta da API de equipes não possui o formato esperado.')
+        }
+
+        const safeTasks = Array.isArray(tarefasData) ? tarefasData : []
+        const formattedTeams = equipesData.map((eq, idx) => mapEquipeFromApi(eq, idx, safeTasks))
+
+        if (active) {
+          setTeams(formattedTeams)
+          setSelectedTeamId(prev => prev ?? formattedTeams.at(0)?.id ?? null)
+        }
+      } catch (error) {
+        if (active) {
+          setErrorMessage(error.message)
+        }
+      } finally {
+        if (active) {
+          setLoading(false)
+        }
+      }
+    }
+
+    loadEquipes()
+
+    return () => {
+      active = false
+    }
+  }, [retryToken])
+
+  const selectedTeam = teams.find(t => t.id === selectedTeamId) || teams.at(0) || {
+    id: 0,
+    name: 'Nenhuma equipe',
+    description: '',
+    progress: 0,
+    points: '0',
+    members: [],
+    messages: []
+  }
+
+  const allCompanyMembers = mockMembersPool.map(member => ({
+    ...member,
+    team: teams.at(0)?.name || 'Geral'
+  }))
 
   const filteredMembers = allCompanyMembers.filter(member =>
     member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -65,7 +143,7 @@ export default function Equipes() {
 
   const handleSendMessage = (e) => {
     e.preventDefault()
-    if (!newMessage.trim()) return
+    if (!newMessage.trim() || !selectedTeam.id) return
     const updatedTeams = teams.map(team => {
       if (team.id === selectedTeam.id) {
         return {
@@ -119,14 +197,30 @@ export default function Equipes() {
         </button>
       </div>
 
+      {errorMessage && (
+        <div className="alert alert-danger d-flex justify-content-between align-items-center mb-4" role="alert">
+          <span>
+            <i className="bi bi-exclamation-circle me-2" />
+            {errorMessage}
+          </span>
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-danger"
+            onClick={() => setRetryToken(value => value + 1)}
+          >
+            Tentar novamente
+          </button>
+        </div>
+      )}
+
       <div className="row g-3 mb-4">
         <div className="col-6 col-xl-3">
           <article className="stat-card">
             <div className="d-flex justify-content-between align-items-center">
-              <span className="stat-label">Minhas equipes</span>
+              <span className="stat-label">Equipes cadastradas</span>
               <span className="stat-icon"><i className="bi bi-people-fill" /></span>
             </div>
-            <div className="stat-value">{teams.length}</div>
+            <div className="stat-value">{loading ? '...' : teams.length}</div>
           </article>
         </div>
         <div className="col-6 col-xl-3">
@@ -144,7 +238,7 @@ export default function Equipes() {
               <span className="stat-label">Pontos do time</span>
               <span className="stat-icon"><i className="bi bi-trophy-fill" /></span>
             </div>
-            <div className="stat-value">{selectedTeam.points}</div>
+            <div className="stat-value">{loading ? '...' : selectedTeam.points}</div>
           </article>
         </div>
         <div className="col-6 col-xl-3">
@@ -153,7 +247,7 @@ export default function Equipes() {
               <span className="stat-label">Meta da equipe</span>
               <span className="stat-icon"><i className="bi bi-bullseye" /></span>
             </div>
-            <div className="stat-value">{selectedTeam.progress}%</div>
+            <div className="stat-value">{loading ? '...' : `${selectedTeam.progress}%`}</div>
           </article>
         </div>
       </div>
@@ -177,31 +271,37 @@ export default function Equipes() {
         <div className="row g-3">
           <div className="col-xl-4">
             <article className="panel h-100">
-              <h3 className="panel-title mb-3">Equipes que participo</h3>
-              <div className="d-flex flex-column gap-2">
-                {teams.map(team => (
-                  <div
-                    key={team.id}
-                    className={`team-selector-card ${team.id === selectedTeam.id ? 'selected' : ''}`}
-                    onClick={() => setSelectedTeamId(team.id)}
-                  >
-                    <div className="d-flex justify-content-between align-items-center mb-1">
-                      <strong>{team.name}</strong>
-                      <span className="badge bg-primary-subtle text-primary rounded-pill">
-                        {team.members.length} membros
-                      </span>
+              <h3 className="panel-title mb-3">Equipes no sistema</h3>
+              {loading ? (
+                <p className="muted small">Carregando equipes do banco...</p>
+              ) : teams.length === 0 ? (
+                <p className="muted small">Nenhuma equipe cadastrada no banco de dados.</p>
+              ) : (
+                <div className="d-flex flex-column gap-2">
+                  {teams.map(team => (
+                    <div
+                      key={team.id}
+                      className={`team-selector-card ${team.id === selectedTeam.id ? 'selected' : ''}`}
+                      onClick={() => setSelectedTeamId(team.id)}
+                    >
+                      <div className="d-flex justify-content-between align-items-center mb-1">
+                        <strong>{team.name}</strong>
+                        <span className="badge bg-primary-subtle text-primary rounded-pill">
+                          {team.members.length} membros
+                        </span>
+                      </div>
+                      <p className="small muted mb-2">{team.description}</p>
+                      <div className="d-flex justify-content-between small fw-bold mb-1">
+                        <span>Progresso coletivo</span>
+                        <span>{team.progress}%</span>
+                      </div>
+                      <div className="progress" style={{ height: '6px' }}>
+                        <div className="progress-bar" style={{ width: `${team.progress}%` }} />
+                      </div>
                     </div>
-                    <p className="small muted mb-2">{team.description}</p>
-                    <div className="d-flex justify-content-between small fw-bold mb-1">
-                      <span>Progresso coletivo</span>
-                      <span>{team.progress}%</span>
-                    </div>
-                    <div className="progress" style={{ height: '6px' }}>
-                      <div className="progress-bar" style={{ width: `${team.progress}%` }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </article>
           </div>
           <div className="col-xl-8">
@@ -367,7 +467,7 @@ export default function Equipes() {
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="Ex: Squad Inovação"
+                  placeholder="Ex: Equipe Comercial"
                   value={newTeamName}
                   onChange={(e) => setNewTeamName(e.target.value)}
                   required
