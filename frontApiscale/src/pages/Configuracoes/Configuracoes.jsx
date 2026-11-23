@@ -144,8 +144,8 @@ export default function Configuracoes() {
         >
           <i
             className={`bi ${feedback.type === 'success'
-                ? 'bi-check-circle-fill'
-                : 'bi-exclamation-triangle-fill'
+              ? 'bi-check-circle-fill'
+              : 'bi-exclamation-triangle-fill'
               }`}
           />
           <span>{feedback.text}</span>
@@ -254,13 +254,20 @@ export default function Configuracoes() {
                 <strong>Encerrar sessão</strong>
                 <small>Desconectar sua conta deste navegador com segurança.</small>
               </div>
-              <button
+              {/*               <button
                 type="button"
                 className="danger-outline-button"
                 onClick={() => {
                   localStorage.removeItem('apiscale_funcionario_id')
                   navigate('/sair')
                 }}
+              >
+                <i className="bi bi-box-arrow-right me-1" /> Sair
+              </button> */} {/* BOTÃO QUE REALMENTE SAI DA CONTA */}
+              <button
+                type="button"
+                className="danger-outline-button"
+                onClick={() => navigate('/')}
               >
                 <i className="bi bi-box-arrow-right me-1" /> Sair
               </button>
