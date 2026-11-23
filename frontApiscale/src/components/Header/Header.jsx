@@ -1,5 +1,7 @@
-import { useLocation } from 'react-router-dom'
+//import { useLocation } from 'react-router-dom'
 import './Header.css'
+import { useUser } from '../../context/UserContext'
+import { Link, useLocation } from 'react-router-dom'//mudando aqui é pra usar a rota quando clica na foto
 
 const titles = {
   '/': ['Dashboard', 'Acompanhe sua evolução e suas conquistas.'],
@@ -12,13 +14,19 @@ const titles = {
 export default function Header({ onMenuClick }) {
   const location = useLocation()
   const [title, subtitle] = titles[location.pathname] ?? titles['/']
+  const { user, initials } = useUser() //puxa o perfil do banco
   return (
     <header className="top-header">
       <button className="mobile-menu-button" onClick={onMenuClick} aria-label="Abrir menu"><i className="bi bi-list" /></button>
       <div className="header-heading"><span className="header-eyebrow">APISCALE</span><h1>{title}</h1><p>{subtitle}</p></div>
       <div className="header-actions">
         <button className="header-icon" aria-label="Notificações"><i className="bi bi-moon" /></button>
-        <button className="user-avatar" aria-label="Perfil do usuário">IS</button>
+
+        {/* <button className="user-avatar" aria-label="Perfil do usuário">IS</button> */}
+        {/* <Link to="/perfil" className="user-avatar" aria-label="Perfil do usuário">IS</Link> */}{/* troca o botao do perfil pra link com rota */}
+
+        <Link to="/perfil"className="user-avatar"aria-label="Perfil do usuário"title={user?.nome ? `Perfil de ${user.nome}` : 'Meu perfil'}>{initials}</Link> {/* Agora além de rota, a foto vai ser do usuário do banco */}
+        
       </div>
     </header>
   )

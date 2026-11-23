@@ -47,7 +47,14 @@ public class FuncionarioService {
         funcionarioExistente.setTelefone(dadosAtualizados.getTelefone());
         funcionarioExistente.setDataNascimento(dadosAtualizados.getDataNascimento());
         funcionarioExistente.setCargo(dadosAtualizados.getCargo());
-        funcionarioExistente.setSenha(dadosAtualizados.getSenha());
+
+        // tirei essa parte e adicionei a de baixo
+        //funcionarioExistente.setSenha(dadosAtualizados.getSenha());
+
+        // não aceita senha vazia, pois no banco a senha é NOT NULL
+        if (dadosAtualizados.getSenha() != null && !dadosAtualizados.getSenha().isBlank()) {
+    funcionarioExistente.setSenha(dadosAtualizados.getSenha());
+}
 
         return funcionarioRepository.save(funcionarioExistente);
     }
