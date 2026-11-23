@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useUser } from '../../context/UserContext'
 import './Configuracoes.css'
 
 export default function Configuracoes() {
-  const API_URL = 'http://localhost:8080/api/funcionarios'
-  const USER_ID = 55566677727 // precisa trocar pelo ID do usuário logado
-  const [usuarioCompleto, setUsuarioCompleto] = useState(null)
+  const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/funcionarios`
+  const navigate = useNavigate()
+  const { user, setUser } = useUser()
 
   const [email, setEmail] = useState('')
 
@@ -24,48 +26,42 @@ export default function Configuracoes() {
   const [feedback, setFeedback] = useState(null)
 
   useEffect(() => {
-    async function carregarUsuario() {
-      try {
-        const response = await fetch(`${API_URL}/${USER_ID}`)
-        if (!response.ok) {
-          throw new Error('Erro ao buscar usuário')
-        }
-        const data = await response.json()
-        setUsuarioCompleto(data)
-        setEmail(data.email || '')
-        setPreferences({
-          notificacoesTarefas: data.notificacoesTarefas ?? true,
-          lembretesOfensiva: data.lembretesOfensiva ?? true,
-          evolucaoMascote: data.evolucaoMascote ?? true,
-          resumoSemanal: data.resumoSemanal ?? false,
-        })
-      } catch (error) {
-        showStatus('danger', 'Não foi possível carregar os dados do servidor.')
-      }
-    }
-
-    carregarUsuario()
-  }, [])
+    if (!user) return
+    setEmail(user.email || '')
+    setPreferences({
+      notificacoesTarefas: user.notificacoesTarefas ?? true,
+      lembretesOfensiva: user.lembretesOfensiva ?? true,
+      evolucaoMascote: user.evolucaoMascote ?? true,
+      resumoSemanal: user.resumoSemanal ?? false,
+    })
+  }, [user])
 
   async function salvarNoBackend(dadosAtualizados, mensagemSucesso) {
+    if (!user?.id) {
+      showStatus('danger', 'Usuário não identificado.')
+      return false
+    }
+
     try {
-      const response = await fetch(`${API_URL}/${USER_ID}`, {
+      const payload = {
+        ...user,
+        ...dadosAtualizados,
+      }
+
+      const response = await fetch(`${API_URL}/${user.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...usuarioCompleto,
-          ...dadosAtualizados,
-        }),
+        body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
         throw new Error('Erro ao salvar alterações')
       }
 
-      const data = await response.json()
-      setUsuarioCompleto(data)
+      const data = await response.json().catch(() => null)
+      setUser(data || payload)
       showStatus('success', mensagemSucesso)
       return true
     } catch (error) {
@@ -101,10 +97,6 @@ export default function Configuracoes() {
       return
     }
 
-    if (usuarioCompleto?.senha && passwordData.senhaAtual !== usuarioCompleto.senha) {
-      showStatus('danger', 'A senha atual está incorreta.')
-      return
-    }
 
     if (passwordData.novaSenha.length < 6) {
       showStatus('danger', 'A nova senha deve ter pelo menos 6 caracteres.')
@@ -151,11 +143,10 @@ export default function Configuracoes() {
           role="alert"
         >
           <i
-            className={`bi ${
-              feedback.type === 'success'
+            className={`bi ${feedback.type === 'success'
                 ? 'bi-check-circle-fill'
                 : 'bi-exclamation-triangle-fill'
-            }`}
+              }`}
           />
           <span>{feedback.text}</span>
         </div>
@@ -254,7 +245,7 @@ export default function Configuracoes() {
             </form>
           </article>
         </div>
-        
+
         <div className="col-xl-7 d-flex flex-column gap-3">
           <article className="panel">
             <h3 className="panel-title mb-2">Privacidade e Sessão</h3>
@@ -266,14 +257,17 @@ export default function Configuracoes() {
               <button
                 type="button"
                 className="danger-outline-button"
-                onClick={() => showStatus('success', 'Sessão encerrada (simulação).')}
+                onClick={() => {
+                  localStorage.removeItem('apiscale_funcionario_id')
+                  navigate('/sair')
+                }}
               >
                 <i className="bi bi-box-arrow-right me-1" /> Sair
-                </button>
-              </div>
-            </article>
-          </div>
+              </button>
+            </div>
+          </article>
         </div>
+      </div>
     </section>
   )
 }
