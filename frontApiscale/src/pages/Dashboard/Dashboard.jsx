@@ -1,6 +1,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useUser } from '../../context/UserContext' // imoprtando perfil do usasario
 
 import PerformanceChart from '../../components/Charts/PerformanceChart'
 import TasksChart from '../../components/Charts/TasksChart'
@@ -229,6 +230,9 @@ export default function Dashboard() {
     },
   ]
 
+const { user } = useUser()
+const firstName = user?.nome?.trim().split(/\s+/)[0] || 'Isabella'
+// const pra pudar o nome fixo
 
   return (
     <section className="dashboard-page">
@@ -238,7 +242,7 @@ export default function Dashboard() {
 
         <div>
           <h2 className="page-title">
-            Olá, Isabella! 👋
+            Olá, {firstName}! 👋 {/* {firstName} no lugar do nome fixo */}
           </h2>
 
           <p className="page-subtitle">

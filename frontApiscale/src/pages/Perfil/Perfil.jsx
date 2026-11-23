@@ -1,11 +1,14 @@
-import { useState } from 'react'
+//import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { getInitials, useUser } from '../../context/UserContext'
 import './Perfil.css'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
 
 const initialProfile = {
   name: 'Isabella',
   initials: 'IS',
-//  photoUrl: '',
+  //  photoUrl: '',
   role: 'Analista de Operações',
   department: 'Operações & Processos • Apiscale',
   location: 'Indaiatuba, SP',
@@ -44,11 +47,16 @@ const initialProfile = {
 
 export default function Perfil() {
   const navigate = useNavigate()
+  const { user, setUser, loading: loadingUser } = useUser()// const que busca dados do usuario
 
   const [profile, setProfile] = useState(initialProfile)
   const [draft, setDraft] = useState(initialProfile)
   const [isEditing, setIsEditing] = useState(false)
   const [notice, setNotice] = useState(null)
+
+  //fezendo o sistema salvar as alterações no perfil
+  const [saving, setSaving] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
   // Estados da alteração de senha
   const [isChangingPassword, setIsChangingPassword] = useState(false)
@@ -60,6 +68,117 @@ export default function Perfil() {
   const [showPasswords, setShowPasswords] = useState(false)
   const [passwordError, setPasswordError] = useState('')
 
+  /* =========================================
+    CONSTS QUE USAM OS DADOS BUSCADOS NO BANCO
+    ========================================= */
+
+  const [tasks, setTasks] = useState([])
+  const [loadingTasks, setLoadingTasks] = useState(true)
+
+  const [teams, setTeams] = useState([])
+  const [loadingTeams, setLoadingTeams] = useState(true)
+
+
+  /* =========================================
+    BUSCAS NO BANCO
+    ========================================= */
+  // TAREFAS
+  useEffect(() => {
+    let active = true
+
+    async function loadTasks() {
+      setLoadingTasks(true)
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/tarefas`)
+        if (!response.ok) return
+
+        const data = await response.json()
+        if (active && Array.isArray(data)) {
+          setTasks(data)
+        }
+      } catch {
+        // Se a API estiver fora do ar, mantém o fallback visual
+      } finally {
+        if (active) {
+          setLoadingTasks(false)
+        }
+      }
+    }
+
+    loadTasks()
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  const completedGoalsCount = useMemo(() => {
+    return tasks.filter(task => task.status === 'Concluida').length
+  }, [tasks])
+
+  // EQUIPES
+
+  useEffect(() => {
+    let active = true
+
+    async function loadTeams() {
+      setLoadingTeams(true)
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/equipes`)
+        if (!response.ok) return
+
+        const data = await response.json()
+        if (active && Array.isArray(data)) {
+          setTeams(data)
+        }
+      } catch {
+        // Se a API estiver fora do ar, mantém o fallback visual
+      } finally {
+        if (active) {
+          setLoadingTeams(false)
+        }
+      }
+    }
+
+    loadTeams()
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  // FUNCIONÁRIO (DADOS DO PERFIL)
+  useEffect(() => {
+    if (!user) return
+
+    const nomeReal = user.nome || initialProfile.name
+
+    const dadosDoBanco = {
+      id: user.id ?? 1,
+      name: nomeReal,
+      initials: getInitials(nomeReal),
+      cpf: user.cpf ?? '',
+      email: user.email ?? initialProfile.email,
+      phone: user.telefone ?? '',
+      birthDate: user.dataNascimento ?? '',
+      role: user.cargo || initialProfile.role,
+      empresa: user.empresa ?? null,
+      department: user.empresa?.nome
+        ? `${user.empresa.nome} • Apiscale`
+        : initialProfile.department,
+    }
+
+    setProfile((prev) => ({ ...prev, ...dadosDoBanco }))
+    if (!isEditing) {
+      setDraft((prev) => ({ ...prev, ...dadosDoBanco }))
+    }
+  }, [user])
+
+  /* ==================================
+    FIM DAS BUSCAS NO BANCO
+  =================================== */
   const showNotice = (text) => {
     setNotice(text)
     setTimeout(() => setNotice(null), 3000)
@@ -75,7 +194,7 @@ export default function Perfil() {
     setDraft(profile)
     setIsEditing(false)
   }
-  
+
   // tira a foto de perfil
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -83,44 +202,85 @@ export default function Perfil() {
   }
   // tira a foto de perfil
 
-/*   const handleChange = (e) => {
-    const { name, value } = e.target
-    setDraft((prev) => ({ ...prev, [name]: value }))
-  }
-
-  const handlePhotoChange = (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    const reader = new FileReader()
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        setDraft((prev) => ({ ...prev, photoUrl: reader.result }))
-      }
+  /*   const handleChange = (e) => {
+      const { name, value } = e.target
+      setDraft((prev) => ({ ...prev, [name]: value }))
     }
-    reader.readAsDataURL(file)
-  } */
+  
+    const handlePhotoChange = (e) => {
+      const file = e.target.files?.[0]
+      if (!file) return
+  
+      const reader = new FileReader()
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          setDraft((prev) => ({ ...prev, photoUrl: reader.result }))
+        }
+      }
+      reader.readAsDataURL(file)
+    } */
 
   const handleRemovePhoto = () => {
     setDraft((prev) => ({ ...prev, photoUrl: '' }))
   }
 
-  const handleSave = (e) => {
+  // salva as alterações
+  const handleSave = async (e) => {
     e.preventDefault()
-    const cleanName = draft.name.trim() || profile.name
-    const parts = cleanName.split(/\s+/)
-    const computedInitials =
-      parts.length >= 2
-        ? `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
-        : cleanName.slice(0, 2).toUpperCase()
+    setSaving(true)
+    setErrorMessage('')
 
-    setProfile({
-      ...draft,
-      name: cleanName,
-      initials: computedInitials,
-    })
-    setIsEditing(false)
-    showNotice('Informações do perfil atualizadas com sucesso.')
+    const cleanName = draft.name.trim() || profile.name
+
+    // Monta os dados no formato exato que o Funcionario.java espera
+    const payload = {
+      id: profile.id,
+      cpf: profile.cpf || null,
+      nome: cleanName,
+      email: draft.email.trim(),
+      telefone: (draft.phone || '').trim() || null,
+      dataNascimento: profile.birthDate || null,
+      cargo: profile.role || 'Funcionario',
+      empresa: profile.empresa,
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/funcionarios/${profile.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Erro ao salvar perfil (HTTP ${response.status}).`)
+      }
+
+      const updatedUser = await response.json().catch(() => null)
+
+      // Atualiza o UserContext global (Header e Dashboard atualizam na hora)
+      if (updatedUser) {
+        setUser(updatedUser)
+      } else {
+        setUser((prev) => ({ ...(prev || {}), ...payload }))
+      }
+
+      setProfile((prev) => ({
+        ...prev,
+        name: cleanName,
+        initials: getInitials(cleanName),
+        email: payload.email,
+        phone: payload.telefone || '',
+        location: draft.location,
+        bio: draft.bio,
+      }))
+
+      setIsEditing(false)
+      showNotice('Informações do perfil atualizadas no banco com sucesso.')
+    } catch (err) {
+      setErrorMessage(err.message || 'Não foi possível salvar no banco de dados.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handlePasswordInput = (e) => {
@@ -129,25 +289,52 @@ export default function Perfil() {
     if (passwordError) setPasswordError('')
   }
 
-  const handlePasswordSubmit = (e) => {
-    e.preventDefault()
-    if (!passwords.current || !passwords.next || !passwords.confirm) {
-      setPasswordError('Preencha todos os campos de senha.')
-      return
+  const handlePasswordSubmit = async (e) => {
+  e.preventDefault()
+
+  if (!passwords.current || !passwords.next || !passwords.confirm) {
+    setPasswordError('Preencha todos os campos de senha.')
+    return
+  }
+  if (passwords.next.length < 6) {
+    setPasswordError('A nova senha deve ter pelo menos 6 caracteres.')
+    return
+  }
+  if (passwords.next !== passwords.confirm) {
+    setPasswordError('A confirmação da nova senha não confere.')
+    return
+  }
+
+  try {
+    const payload = {
+      id: profile.id,
+      cpf: profile.cpf || null,
+      nome: profile.name,
+      email: profile.email,
+      telefone: profile.phone || null,
+      dataNascimento: profile.birthDate || null,
+      cargo: profile.role || 'Funcionario',
+      empresa: profile.empresa,
+      senha: passwords.next,
     }
-    if (passwords.next.length < 6) {
-      setPasswordError('A nova senha deve ter pelo menos 6 caracteres.')
-      return
-    }
-    if (passwords.next !== passwords.confirm) {
-      setPasswordError('A confirmação da nova senha não confere.')
-      return
+
+    const response = await fetch(`${API_BASE_URL}/api/funcionarios/${profile.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Erro ao atualizar senha (HTTP ${response.status}).`)
     }
 
     setPasswords({ current: '', next: '', confirm: '' })
     setIsChangingPassword(false)
     setPasswordError('')
-    showNotice('Senha alterada com sucesso.')
+    showNotice('Senha alterada no banco com sucesso.')
+  } catch (err) {
+    setPasswordError(err.message || 'Não foi possível atualizar a senha no banco.')
+  }
   }
 
   const handleLogout = () => {
@@ -167,6 +354,13 @@ export default function Perfil() {
         </div>
       )}
 
+      {errorMessage && (
+        <div className="profile-alert" role="alert">
+          <i className="bi bi-exclamation-circle-fill" />
+          <span>{errorMessage}</span>
+        </div>
+      )}
+
       {/* Cartão Principal (Foto/Iniciais + Nome + Botão Editar no topo) */}
       <div className="profile-hero-card">
         <div className="profile-identity">
@@ -175,7 +369,7 @@ export default function Perfil() {
               {/* {activePhoto ? (
                 <img src={activePhoto} alt={`Foto de ${profile.name}`} className="profile-avatar-img" />
               ) : ( */}
-                <span>{activeInitials}</span>
+              <span>{activeInitials}</span>
               {/* )} */}
             </div>
 
@@ -201,7 +395,6 @@ export default function Perfil() {
             <p className="profile-role">{profile.role}</p>
             <p className="profile-meta">
               <span><i className="bi bi-building" /> {profile.department}</span>
-              <span><i className="bi bi-geo-alt" /> {profile.location}</span>
             </p>
 
             {/* {isEditing && draft.photoUrl && (
@@ -249,7 +442,7 @@ export default function Perfil() {
             <i className="bi bi-check2-circle" />
           </div>
           <div>
-            <strong>{profile.completedGoals}</strong>
+            <strong>{loadingTasks ? '...' : completedGoalsCount}</strong>
             <span>Metas concluídas</span>
           </div>
         </div>
@@ -259,7 +452,7 @@ export default function Perfil() {
             <i className="bi bi-people-fill" />
           </div>
           <div>
-            <strong>{profile.activeTeams}</strong>
+            <strong>{loadingTeams ? '...' : teams.length}</strong>
             <span>Equipes ativas</span>
           </div>
         </div>
@@ -296,13 +489,13 @@ export default function Perfil() {
                   <span className="info-value">{profile.email}</span>
                 </div>
                 <div className="info-item">
-                  <span className="info-label">Localização</span>
-                  <span className="info-value">{profile.location}</span>
+                  <span className="info-label">Telefone</span>
+                  <span className="info-value">{profile.phone || 'Não informado'}</span>
                 </div>
-                <div className="info-bio">
+{/*                 <div className="info-bio">
                   <span className="info-label">Sobre a trajetória</span>
                   <p>{profile.bio}</p>
-                </div>
+                </div> */} {/* AQUI ERA A BIO, COMO NÃO TEMOS BIO NO BANCO TIREI */}
               </div>
             ) : (
               <form id="profile-form" className="profile-form" onSubmit={handleSave}>
@@ -313,6 +506,7 @@ export default function Perfil() {
                       id="name"
                       name="name"
                       type="text"
+                      maxLength={30}
                       value={draft.name}
                       onChange={handleChange}
                       required
@@ -320,12 +514,13 @@ export default function Perfil() {
                   </div>
 
                   <div className="form-field">
-                    <label htmlFor="location">Localização</label>
+                    <label htmlFor="phone">Telefone</label>
                     <input
-                      id="location"
-                      name="location"
+                      id="phone"
+                      name="phone"
                       type="text"
-                      value={draft.location}
+                      maxLength={20}
+                      value={draft.phone || ''}
                       onChange={handleChange}
                     />
                   </div>
@@ -333,40 +528,20 @@ export default function Perfil() {
 
                 <div className="form-row-2">
                   <div className="form-field">
-                    <label htmlFor="role">Cargo / Atuação</label>
-                    <input
-                      id="role"
-                      name="role"
-                      type="text"
-                      value={draft.role}
-                      onChange={handleChange}
-                    />
-                  </div>
-
-                  <div className="form-field">
                     <label htmlFor="email">E-mail</label>
                     <input
                       id="email"
                       name="email"
                       type="email"
+                      maxLength={50}
                       value={draft.email}
                       onChange={handleChange}
                     />
                   </div>
+
                 </div>
 
-                <div className="form-field">
-                  <label htmlFor="department">Área / Organização</label>
-                  <input
-                    id="department"
-                    name="department"
-                    type="text"
-                    value={draft.department}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="form-field">
+{/*                 <div className="form-field">
                   <label htmlFor="bio">Sobre a trajetória</label>
                   <textarea
                     id="bio"
@@ -375,7 +550,7 @@ export default function Perfil() {
                     value={draft.bio}
                     onChange={handleChange}
                   />
-                </div>
+                </div> */} {/* TIRANDO A BIO */}
               </form>
             )}
           </div>
