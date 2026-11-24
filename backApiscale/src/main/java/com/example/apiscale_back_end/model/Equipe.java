@@ -6,6 +6,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
@@ -29,6 +31,14 @@ public class Equipe {
     @JoinColumn(name = "cnpj_empresa", referencedColumnName = "cnpj")
     private Empresa empresa;
 
+    @ManyToMany 
+    @JoinTable(
+        name = "equipes_funcionarios", 
+        joinColumns = @JoinColumn(name = "id_equipe"), 
+        inverseJoinColumns = @JoinColumn(name = "id_funcionario")
+    )
+    private java.util.List<Funcionario> funcionarios = new java.util.ArrayList<>();
+
     // Construtor vazio exigido pelo JPA.
     public Equipe() {
     }
@@ -45,4 +55,11 @@ public class Equipe {
     public Empresa getEmpresa() { return empresa; }
     // Define a empresa associada à equipe.
     public void setEmpresa(Empresa empresa) { this.empresa = empresa; }
+
+    public java.util.List<Funcionario> getFuncionarios() {
+        return funcionarios;
+    }
+    public void setFuncionarios(java.util.List<Funcionario> funcionarios) {
+        this.funcionarios = funcionarios;
+    }
 }

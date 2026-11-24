@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import './Equipe.css'
+import { useUser } from '../../context/UserContext'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
 
-async function apiRequest(path) {
+async function apiRequest(path, options = {}) {
   let response
 
   try {
-    response = await fetch(`${API_BASE_URL}${path}`)
+    response = await fetch(`${API_BASE_URL}${path}`, options)
   } catch {
     throw new Error(
       'Não foi possível conectar ao servidor. Verifique se o Spring Boot está rodando.'
@@ -25,30 +26,55 @@ async function apiRequest(path) {
   return body
 }
 
-const mockMembersPool = [
-  { id: 101, name: 'Isabella', role: 'Analista de Operações', level: 'Nível 4 · Aprendiz', streak: 7, points: '1.250', online: true },
-  { id: 102, name: 'Lucas Almeida', role: 'Especialista de Processos', level: 'Nível 5 · Explorador', streak: 12, points: '1.400', online: true },
-  { id: 103, name: 'Mariana Costa', role: 'Assistente Administrativo', level: 'Nível 3 · Iniciante', streak: 4, points: '800', online: false },
-  { id: 104, name: 'Gabriel Santos', role: 'Coordenador de Atendimento', level: 'Nível 6 · Guardião', streak: 15, points: '1.680', online: true },
-  { id: 105, name: 'Rafael Lima', role: 'Consultor de Relacionamento', level: 'Nível 4 · Aprendiz', streak: 9, points: '1.300', online: true },
-  { id: 106, name: 'Camila Rocha', role: 'Analista de Projetos', level: 'Nível 5 · Explorador', streak: 11, points: '1.520', online: false },
-]
+function formatMemberFromApi(func, index = 0) {
+  return {
+    id: func.id,
+    name: func.nome || 'Colaborador',
+    role: func.cargo || 'Funcionário',
+    level: 'Nível 4 · Aprendiz',
+    streak: 7,
+    points: String(1000 + ((func.id || index + 1) * 150)),
+    online: true,
+    empresaId: func.empresa?.id ?? null,
+    empresaCnpj: func.empresa?.cnpj ?? null,
+  }
+}
 
-function mapEquipeFromApi(equipe, index, tasks) {
+function mapEquipeFromApi(equipe, index, tasks, companyFuncionarios) {
   const teamTasks = tasks.filter(t => t.equipe?.id === equipe.id)
   const completedCount = teamTasks.filter(t => t.status === 'Concluida').length
   const progress = teamTasks.length > 0
     ? Math.round((completedCount / teamTasks.length) * 100)
-    : (index === 0 ? 75 : 60)
+    : 0
 
-  const empresaLabel = equipe.empresa?.nomeFantasia || equipe.empresa?.razaoSocial || equipe.empresa?.cnpj || 'Apiscale Corporativo'
+  const empresaLabel =
+    equipe.empresa?.nomeFantasia ||
+    equipe.empresa?.razaoSocial ||
+    equipe.empresa?.nome ||
+    equipe.empresa?.cnpj ||
+    'Apiscale Corporativo'
 
-  const start = (index * 2) % mockMembersPool.length
-  const teamMembers = [
-    mockMembersPool.at(start),
-    mockMembersPool.at((start + 1) % mockMembersPool.length),
-    mockMembersPool.at((start + 2) % mockMembersPool.length),
-  ].filter(Boolean)
+  // 1) Se a API de equipes já trouxer a lista de integrantes dentro da equipe
+  const rawEmbeddedMembers = Array.isArray(equipe.funcionarios)
+    ? equipe.funcionarios
+    : Array.isArray(equipe.membros)
+      ? equipe.membros
+      : []
+
+  let teamMembers = rawEmbeddedMembers.map((m, idx) =>
+    formatMemberFromApi(m.funcionario || m, idx)
+  )
+
+  // 2) Se não vier dentro da equipe, filtra os funcionários da empresa vinculados a essa equipe
+  if (teamMembers.length === 0) {
+    teamMembers = companyFuncionarios
+      .filter(f =>
+        f.equipe?.id === equipe.id ||
+        f.equipeId === equipe.id ||
+        (Array.isArray(f.equipes) && f.equipes.some(eq => eq.id === equipe.id))
+      )
+      .map((f, idx) => formatMemberFromApi(f, idx))
+  }
 
   return {
     id: equipe.id,
@@ -58,14 +84,21 @@ function mapEquipeFromApi(equipe, index, tasks) {
     points: String(2400 + (equipe.id || index + 1) * 350),
     tasksCount: teamTasks.length,
     members: teamMembers,
-    messages: [
-      { id: 1, author: teamMembers.at(0)?.name || 'Isabella', text: `Metas da equipe ${equipe.nomeEquipe} atualizadas!`, time: '10:30' },
-    ]
+    messages: teamMembers.length > 0
+      ? [{
+        id: 1,
+        author: teamMembers[0].name,
+        text: `Metas da equipe ${equipe.nomeEquipe} atualizadas!`,
+        time: '10:30',
+      }]
+      : [],
   }
 }
 
 export default function Equipes() {
+  const { user } = useUser()
   const [teams, setTeams] = useState([])
+  const [companyMembers, setCompanyMembers] = useState([])
   const [selectedTeamId, setSelectedTeamId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
@@ -77,7 +110,32 @@ export default function Equipes() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [newTeamName, setNewTeamName] = useState('')
   const [newTeamDesc, setNewTeamDesc] = useState('')
+  const [selectedMemberIds, setSelectedMemberIds] = useState([])
+  const [editingTeamId, setEditingTeamId] = useState(null)
+  const openEditTeamModal = (team) => {
+    setEditingTeamId(team.id)
+    setNewTeamName(team.name || '')
+    setNewTeamDesc('')
+    setSelectedMemberIds(Array.isArray(team.members) ? team.members.map(m => m.id) : [])
+    setShowCreateModal(true)
+  }
+
+  const closeTeamModal = () => {
+    setShowCreateModal(false)
+    setEditingTeamId(null)
+    setNewTeamName('')
+    setNewTeamDesc('')
+    setSelectedMemberIds([])
+  }
   const [selectedMember, setSelectedMember] = useState(null)
+  const toggleMemberSelection = (memberId) => {
+    setSelectedMemberIds(prev =>
+      prev.includes(memberId)
+        ? prev.filter(id => id !== memberId)
+        : [...prev, memberId]
+    )
+  }
+
   useEffect(() => {
     let active = true
 
@@ -86,9 +144,10 @@ export default function Equipes() {
       setErrorMessage('')
 
       try {
-        const [equipesData, tarefasData] = await Promise.all([
+        const [equipesData, tarefasData, funcionariosData] = await Promise.all([
           apiRequest('/api/equipes'),
-          apiRequest('/api/tarefas').catch(() => [])
+          apiRequest('/api/tarefas').catch(() => []),
+          apiRequest('/api/funcionarios').catch(() => []),
         ])
 
         if (!Array.isArray(equipesData)) {
@@ -96,10 +155,51 @@ export default function Equipes() {
         }
 
         const safeTasks = Array.isArray(tarefasData) ? tarefasData : []
-        const formattedTeams = equipesData.map((eq, idx) => mapEquipeFromApi(eq, idx, safeTasks))
+        const safeFuncionarios = Array.isArray(funcionariosData) ? funcionariosData : []
+
+        // Filtra funcionários da mesma empresa do usuário logado
+        const userEmpresaId = user?.empresa?.id ?? null
+        const userEmpresaCnpj = user?.empresa?.cnpj ?? null
+
+        const mesmosDaEmpresa = safeFuncionarios.filter(func => {
+          if (userEmpresaId != null && func.empresa?.id != null) {
+            return func.empresa.id === userEmpresaId
+          }
+          if (userEmpresaCnpj && func.empresa?.cnpj) {
+            return func.empresa.cnpj === userEmpresaCnpj
+          }
+          // Se o usuário logado não tiver empresa vinculada, mostra os retornados
+          return userEmpresaId == null && !userEmpresaCnpj
+        })
+
+        // Filtra também as equipes da mesma empresa (se houver vínculo)
+        const equipesDaEmpresa = equipesData.filter(eq => {
+          if (userEmpresaId != null && eq.empresa?.id != null) {
+            return eq.empresa.id === userEmpresaId
+          }
+          if (userEmpresaCnpj && eq.empresa?.cnpj) {
+            return eq.empresa.cnpj === userEmpresaCnpj
+          }
+          return true
+        })
+
+        const formattedTeams = equipesDaEmpresa.map((eq, idx) =>
+          mapEquipeFromApi(eq, idx, safeTasks, mesmosDaEmpresa)
+        )
+
+        const formattedMembers = mesmosDaEmpresa.map((func, idx) => {
+          const equipeDoColega = formattedTeams.find(t =>
+            t.members.some(m => m.id === func.id)
+          )
+          return {
+            ...formatMemberFromApi(func, idx),
+            team: equipeDoColega?.name || func.empresa?.nomeFantasia || func.empresa?.nome || 'Empresa',
+          }
+        })
 
         if (active) {
           setTeams(formattedTeams)
+          setCompanyMembers(formattedMembers)
           setSelectedTeamId(prev => prev ?? formattedTeams.at(0)?.id ?? null)
         }
       } catch (error) {
@@ -118,7 +218,7 @@ export default function Equipes() {
     return () => {
       active = false
     }
-  }, [retryToken])
+  }, [retryToken, user])
 
   const selectedTeam = teams.find(t => t.id === selectedTeamId) || teams.at(0) || {
     id: 0,
@@ -130,10 +230,7 @@ export default function Equipes() {
     messages: []
   }
 
-  const allCompanyMembers = mockMembersPool.map(member => ({
-    ...member,
-    team: teams.at(0)?.name || 'Geral'
-  }))
+  const allCompanyMembers = companyMembers
 
   const filteredMembers = allCompanyMembers.filter(member =>
     member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -152,7 +249,7 @@ export default function Equipes() {
             ...team.messages,
             {
               id: Date.now(),
-              author: 'Isabella',
+              author: user?.nome || 'Colaborador',
               text: newMessage,
               time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             }
@@ -165,25 +262,78 @@ export default function Equipes() {
     setNewMessage('')
   }
 
-  const handleCreateTeam = (e) => {
+  const handleSaveTeam = async (e) => {
     e.preventDefault()
     if (!newTeamName.trim()) return
-    const created = {
-      id: Date.now(),
-      name: newTeamName,
-      description: newTeamDesc || 'Nova equipe criada na plataforma Apiscale.',
-      progress: 0,
-      points: '0',
-      members: [
-        { id: 101, name: 'Isabella', role: 'Líder de Equipe', streak: 7, points: '1.250', online: true }
-      ],
-      messages: []
+
+    const empresaCnpj = user?.empresa?.cnpj || companyMembers.at(0)?.empresaCnpj || null
+    const isEditing = editingTeamId != null
+
+    const payload = {
+      nomeEquipe: newTeamName.trim(),
+      ...(empresaCnpj ? { empresa: { cnpj: empresaCnpj } } : {}),
+      funcionarios: selectedMemberIds.map(id => ({ id })),
     }
-    setTeams([...teams, created])
-    setSelectedTeamId(created.id)
-    setNewTeamName('')
-    setNewTeamDesc('')
-    setShowCreateModal(false)
+
+    try {
+      const endpoint = isEditing ? `/api/equipes/${editingTeamId}` : '/api/equipes'
+      const method = isEditing ? 'PUT' : 'POST'
+
+      const savedEquipe = await apiRequest(endpoint, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      const baseTeam = isEditing
+        ? teams.find(t => t.id === editingTeamId)
+        : null
+
+      const formattedTeam = mapEquipeFromApi(
+        savedEquipe,
+        isEditing ? 0 : teams.length,
+        [],
+        companyMembers
+      )
+
+      if (isEditing) {
+        setTeams(prev =>
+          prev.map(t => (t.id === editingTeamId ? { ...formattedTeam, messages: baseTeam?.messages || formattedTeam.messages } : t))
+        )
+        setSelectedTeamId(savedEquipe.id ?? editingTeamId)
+      } else {
+        setTeams(prev => [...prev, formattedTeam])
+        setSelectedTeamId(savedEquipe.id ?? formattedTeam.id)
+      }
+
+      closeTeamModal()
+    } catch (error) {
+      setErrorMessage(error.message)
+      closeTeamModal()
+    }
+  }
+  const handleDeleteTeam = async (teamId, teamName = 'esta equipe') => {
+    if (!teamId) return
+
+    const confirmed = window.confirm(
+      `Tem certeza que deseja excluir "${teamName}"? Essa ação não pode ser desfeita.`
+    )
+    if (!confirmed) return
+
+    try {
+      await apiRequest(`/api/equipes/${teamId}`, {
+        method: 'DELETE',
+      })
+
+      const remainingTeams = teams.filter(t => t.id !== teamId)
+      setTeams(remainingTeams)
+
+      if (selectedTeamId === teamId) {
+        setSelectedTeamId(remainingTeams.at(0)?.id ?? null)
+      }
+    } catch (error) {
+      setErrorMessage(error.message)
+    }
   }
   return (
     <section>
@@ -192,7 +342,16 @@ export default function Equipes() {
           <h2 className="page-title">Equipes & Colaboração 🤝</h2>
           <p className="page-subtitle">Acompanhe o progresso do seu time, interaja com colegas e alcance metas juntos.</p>
         </div>
-        <button className="primary-button" onClick={() => setShowCreateModal(true)}>
+        <button
+          className="primary-button"
+          onClick={() => {
+            setEditingTeamId(null)
+            setNewTeamName('')
+            setNewTeamDesc('')
+            setSelectedMemberIds([])
+            setShowCreateModal(true)
+          }}
+        >
           <i className="bi bi-plus-lg me-1" /> Nova equipe
         </button>
       </div>
@@ -312,34 +471,58 @@ export default function Equipes() {
                   <h3 className="panel-title mt-1">{selectedTeam.name}</h3>
                   <p className="muted small mb-0">{selectedTeam.description}</p>
                 </div>
-                <span className="level-pill">
-                  <i className="bi bi-stars" /> {selectedTeam.points} pts acumulados
-                </span>
+                <div className="d-flex align-items-center gap-2 flex-wrap">
+                  <span className="level-pill">
+                    <i className="bi bi-stars" /> {selectedTeam.points} pts acumulados
+                  </span>
+                  {selectedTeam.id !== 0 && (
+                    <>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={() => openEditTeamModal(selectedTeam)}
+                      >
+                        <i className="bi bi-pencil me-1" /> Editar
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-danger"
+                        onClick={() => handleDeleteTeam(selectedTeam.id, selectedTeam.name)}
+                      >
+                        <i className="bi bi-trash me-1" /> Excluir
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
 
               <h4 className="small fw-bold text-uppercase muted mt-4 mb-2">Integrantes do time</h4>
-              <div className="row g-2 mb-4">
-                {selectedTeam.members.map(member => (
-                  <div className="col-md-6" key={member.id}>
-                    <div className="member-mini-card" onClick={() => setSelectedMember(member)}>
-                      <div className="member-avatar">
-                        {member.name.charAt(0)}
-                        <span className={`status-dot ${member.online ? 'online' : 'offline'}`} />
-                      </div>
-                      <div className="flex-grow-1">
-                        <div className="fw-bold">{member.name}</div>
-                        <small className="muted d-block">{member.role}</small>
-                      </div>
-                      <div className="text-end">
-                        <span className="streak-badge">
-                          <i className="bi bi-fire" /> {member.streak}d
-                        </span>
-                        <small className="d-block fw-bold text-primary mt-1">{member.points} pts</small>
+              {selectedTeam.members.length === 0 ? (
+                <p className="small muted mb-4">Nenhum integrante vinculado a esta equipe no banco de dados.</p>
+              ) : (
+                <div className="row g-2 mb-4">
+                  {selectedTeam.members.map(member => (
+                    <div className="col-md-6" key={member.id}>
+                      <div className="member-mini-card" onClick={() => setSelectedMember(member)}>
+                        <div className="member-avatar">
+                          {member.name.charAt(0)}
+                          <span className={`status-dot ${member.online ? 'online' : 'offline'}`} />
+                        </div>
+                        <div className="flex-grow-1">
+                          <div className="fw-bold">{member.name}</div>
+                          <small className="muted d-block">{member.role}</small>
+                        </div>
+                        <div className="text-end">
+                          <span className="streak-badge">
+                            <i className="bi bi-fire" /> {member.streak}d
+                          </span>
+                          <small className="d-block fw-bold text-primary mt-1">{member.points} pts</small>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
 
               <h4 className="small fw-bold text-uppercase muted mb-2">Mural da equipe</h4>
               <div className="team-chat-box">
@@ -418,83 +601,111 @@ export default function Equipes() {
             ))}
           </div>
         </article>
-      )}
+      )
+      }
 
-      {selectedMember && (
-        <div className="custom-modal-backdrop" onClick={() => setSelectedMember(null)}>
-          <div className="custom-modal-card" onClick={(e) => e.stopPropagation()}>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <span className="section-kicker">PERFIL DO COLABORADOR</span>
-              <button className="btn-close" onClick={() => setSelectedMember(null)} />
-            </div>
-            <div className="text-center mb-3">
-              <div className="member-avatar xl mx-auto mb-2">{selectedMember.name.charAt(0)}</div>
-              <h4 className="fw-bold mb-0">{selectedMember.name}</h4>
-              <p className="muted small mb-1">{selectedMember.role}</p>
-              {selectedMember.level && <span className="level-pill">{selectedMember.level}</span>}
-            </div>
-            <div className="row g-2 text-center my-3">
-              <div className="col-6">
-                <div className="p-2 rounded bg-light">
-                  <small className="muted d-block">Pontos</small>
-                  <strong>{selectedMember.points}</strong>
+      {
+        selectedMember && (
+          <div className="custom-modal-backdrop" onClick={() => setSelectedMember(null)}>
+            <div className="custom-modal-card" onClick={(e) => e.stopPropagation()}>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <span className="section-kicker">PERFIL DO COLABORADOR</span>
+                <button className="btn-close" onClick={() => setSelectedMember(null)} />
+              </div>
+              <div className="text-center mb-3">
+                <div className="member-avatar xl mx-auto mb-2">{selectedMember.name.charAt(0)}</div>
+                <h4 className="fw-bold mb-0">{selectedMember.name}</h4>
+                <p className="muted small mb-1">{selectedMember.role}</p>
+                {selectedMember.level && <span className="level-pill">{selectedMember.level}</span>}
+              </div>
+              <div className="row g-2 text-center my-3">
+                <div className="col-6">
+                  <div className="p-2 rounded bg-light">
+                    <small className="muted d-block">Pontos</small>
+                    <strong>{selectedMember.points}</strong>
+                  </div>
+                </div>
+                <div className="col-6">
+                  <div className="p-2 rounded bg-light">
+                    <small className="muted d-block">Ofensiva</small>
+                    <strong><i className="bi bi-fire text-warning" /> {selectedMember.streak} dias</strong>
+                  </div>
                 </div>
               </div>
-              <div className="col-6">
-                <div className="p-2 rounded bg-light">
-                  <small className="muted d-block">Ofensiva</small>
-                  <strong><i className="bi bi-fire text-warning" /> {selectedMember.streak} dias</strong>
-                </div>
-              </div>
+              <button className="primary-button w-100 justify-content-center" onClick={() => setSelectedMember(null)}>
+                Fechar perfil
+              </button>
             </div>
-            <button className="primary-button w-100 justify-content-center" onClick={() => setSelectedMember(null)}>
-              Fechar perfil
-            </button>
           </div>
-        </div>
-      )}
+        )
+      }
 
-      {showCreateModal && (
-        <div className="custom-modal-backdrop" onClick={() => setShowCreateModal(false)}>
-          <div className="custom-modal-card" onClick={(e) => e.stopPropagation()}>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h4 className="panel-title mb-0">Criar Nova Equipe</h4>
-              <button className="btn-close" onClick={() => setShowCreateModal(false)} />
+      {
+        showCreateModal && (
+          <div className="custom-modal-backdrop" onClick={closeTeamModal}>
+            <div className="custom-modal-card" onClick={(e) => e.stopPropagation()}>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h4 className="panel-title mb-0">
+                  {editingTeamId != null ? 'Editar Equipe' : 'Criar Nova Equipe'}
+                </h4>
+                <button className="btn-close" onClick={closeTeamModal} />
+              </div>
+              <form onSubmit={handleSaveTeam}>
+                <div className="mb-3">
+                  <label className="form-label small fw-bold">Nome da equipe</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Ex: Equipe Comercial"
+                    value={newTeamName}
+                    onChange={(e) => setNewTeamName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label small fw-bold">Objetivo / Descrição</label>
+                  <textarea
+                    className="form-control"
+                    rows="3"
+                    placeholder="Descreva o foco desta equipe..."
+                    value={newTeamDesc}
+                    onChange={(e) => setNewTeamDesc(e.target.value)}
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label small fw-bold">Integrantes da equipe</label>
+                  <div className="border rounded p-2 d-flex flex-column gap-2" style={{ maxHeight: '180px', overflowY: 'auto' }}>
+                    {allCompanyMembers.length === 0 ? (
+                      <small className="muted">Nenhum colega disponível na empresa.</small>
+                    ) : (
+                      allCompanyMembers.map(member => (
+                        <label key={member.id} className="form-check d-flex align-items-center gap-2 mb-0" style={{ cursor: 'pointer' }}>
+                          <input
+                            type="checkbox"
+                            className="form-check-input mt-0"
+                            checked={selectedMemberIds.includes(member.id)}
+                            onChange={() => toggleMemberSelection(member.id)}
+                          />
+                          <span className="small fw-semibold">{member.name}</span>
+                          <small className="muted ms-auto">{member.role}</small>
+                        </label>
+                      ))
+                    )}
+                  </div>
+                </div>
+                <div className="d-flex justify-content-end gap-2">
+                  <button type="button" className="btn btn-light" onClick={closeTeamModal}>
+                    Cancelar
+                  </button>
+                  <button type="submit" className="primary-button">
+                    {editingTeamId != null ? 'Salvar alterações' : 'Criar equipe'}
+                  </button>
+                </div>
+              </form>
             </div>
-            <form onSubmit={handleCreateTeam}>
-              <div className="mb-3">
-                <label className="form-label small fw-bold">Nome da equipe</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Ex: Equipe Comercial"
-                  value={newTeamName}
-                  onChange={(e) => setNewTeamName(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="mb-3">
-                <label className="form-label small fw-bold">Objetivo / Descrição</label>
-                <textarea
-                  className="form-control"
-                  rows="3"
-                  placeholder="Descreva o foco desta equipe..."
-                  value={newTeamDesc}
-                  onChange={(e) => setNewTeamDesc(e.target.value)}
-                />
-              </div>
-              <div className="d-flex justify-content-end gap-2">
-                <button type="button" className="btn btn-light" onClick={() => setShowCreateModal(false)}>
-                  Cancelar
-                </button>
-                <button type="submit" className="primary-button">
-                  Criar equipe
-                </button>
-              </div>
-            </form>
           </div>
-        </div>
-      )}
-    </section>
+        )
+      }
+    </section >
   )
 }
