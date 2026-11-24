@@ -2,8 +2,10 @@
 import { Line } from 'react-chartjs-2'
 import './Charts.css'
 import './chartConfig'
+import { useTheme } from '../../context/ThemeContext'
 
 export default function PerformanceChart({ desempenho }) {
+  const { isDark } = useTheme()
 
   const data = {
     labels: desempenho?.labels || [],
@@ -53,12 +55,12 @@ export default function PerformanceChart({ desempenho }) {
 
         ticks: {
           precision: 0,
-          color: '#64748B',
+          color: isDark ? '#94A3B8' : '#64748B',
           stepSize: 1,
         },
 
         grid: {
-          color: 'rgba(69, 124, 255, 0.10)'
+          color: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(69, 124, 255, 0.10)'
         },
 
         border: {
@@ -68,7 +70,7 @@ export default function PerformanceChart({ desempenho }) {
 
       x: {
         ticks: {
-          color: '#64748B'
+          color: isDark ? '#94A3B8' : '#64748B'
         },
 
         grid: {

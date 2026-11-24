@@ -1,279 +1,169 @@
 import { useEffect, useState } from 'react'
+import { useTheme } from '../../context/ThemeContext'
 import './Configuracoes.css'
 
+const PREFS_STORAGE_KEY = 'apiscale-preferences'
+
 export default function Configuracoes() {
-  const API_URL = 'http://localhost:8080/api/funcionarios'
-  const USER_ID = 55566677727 // precisa trocar pelo ID do usuário logado
-  const [usuarioCompleto, setUsuarioCompleto] = useState(null)
+  const { isDark, setDarkTheme } = useTheme()
 
-  const [email, setEmail] = useState('')
-
-  const [passwordData, setPasswordData] = useState({
-    senhaAtual: '',
-    novaSenha: '',
-    confirmarSenha: '',
-  })
-
-  const [preferences, setPreferences] = useState({
-    notificacoesTarefas: true,
-    lembretesOfensiva: true,
-    evolucaoMascote: true,
-    resumoSemanal: false,
+  const [preferences, setPreferences] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(PREFS_STORAGE_KEY))
+      return {
+        notificacoesTarefas: saved?.notificacoesTarefas ?? true,
+        lembretesOfensiva: saved?.lembretesOfensiva ?? true,
+        evolucaoMascote: saved?.evolucaoMascote ?? true,
+        temaEscuro: isDark,
+      }
+    } catch {
+      return {
+        notificacoesTarefas: true,
+        lembretesOfensiva: true,
+        evolucaoMascote: true,
+        temaEscuro: isDark,
+      }
+    }
   })
 
   const [feedback, setFeedback] = useState(null)
 
   useEffect(() => {
-    async function carregarUsuario() {
-      try {
-        const response = await fetch(`${API_URL}/${USER_ID}`)
-        if (!response.ok) {
-          throw new Error('Erro ao buscar usuário')
-        }
-        const data = await response.json()
-        setUsuarioCompleto(data)
-        setEmail(data.email || '')
-        setPreferences({
-          notificacoesTarefas: data.notificacoesTarefas ?? true,
-          lembretesOfensiva: data.lembretesOfensiva ?? true,
-          evolucaoMascote: data.evolucaoMascote ?? true,
-          resumoSemanal: data.resumoSemanal ?? false,
-        })
-      } catch (error) {
-        showStatus('danger', 'Não foi possível carregar os dados do servidor.')
-      }
-    }
+    setPreferences(prev => ({
+      ...prev,
+      temaEscuro: isDark,
+    }))
+  }, [isDark])
 
-    carregarUsuario()
-  }, [])
-
-  async function salvarNoBackend(dadosAtualizados, mensagemSucesso) {
-    try {
-      const response = await fetch(`${API_URL}/${USER_ID}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...usuarioCompleto,
-          ...dadosAtualizados,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Erro ao salvar alterações')
-      }
-
-      const data = await response.json()
-      setUsuarioCompleto(data)
-      showStatus('success', mensagemSucesso)
-      return true
-    } catch (error) {
-      showStatus('danger', 'Erro ao atualizar os dados no servidor.')
-      return false
-    }
-  }
-
-  function handlePasswordChange(e) {
-    const { name, value } = e.target
-    setPasswordData(prev => ({ ...prev, [name]: value }))
-  }
 
   function handleToggle(key) {
-    setPreferences(prev => ({ ...prev, [key]: !prev[key] }))
+    if (key === 'temaEscuro') {
+      const nextValue = !preferences.temaEscuro
+      setDarkTheme(nextValue)
+      setPreferences(prev => ({ ...prev, temaEscuro: nextValue }))
+    } else {
+      setPreferences(prev => ({ ...prev, [key]: !prev[key] }))
+    }
   }
 
   function showStatus(type, text) {
     setFeedback({ type, text })
     setTimeout(() => setFeedback(null), 4000)
   }
-
-  async function handleSaveEmail(e) {
-    e.preventDefault()
-    await salvarNoBackend({ email }, 'E-mail de acesso atualizado com sucesso!')
-  }
-
-  async function handleSavePassword(e) {
-    e.preventDefault()
-
-    if (!passwordData.senhaAtual || !passwordData.novaSenha) {
-      showStatus('danger', 'Preencha a senha atual e a nova senha.')
-      return
-    }
-
-    if (usuarioCompleto?.senha && passwordData.senhaAtual !== usuarioCompleto.senha) {
-      showStatus('danger', 'A senha atual está incorreta.')
-      return
-    }
-
-    if (passwordData.novaSenha.length < 6) {
-      showStatus('danger', 'A nova senha deve ter pelo menos 6 caracteres.')
-      return
-    }
-
-    if (passwordData.novaSenha !== passwordData.confirmarSenha) {
-      showStatus('danger', 'A confirmação de senha não confere.')
-      return
-    }
-
-    const sucesso = await salvarNoBackend(
-      { senha: passwordData.novaSenha },
-      'Senha alterada com sucesso!'
-    )
-
-    if (sucesso) {
-      setPasswordData({ senhaAtual: '', novaSenha: '', confirmarSenha: '' })
-    }
-  }
-
-  async function handleSavePreferences() {
-    await salvarNoBackend(preferences, 'Preferências salvas com sucesso!')
+  
+  function handleSavePreferences() {
+    setDarkTheme(preferences.temaEscuro)
+    localStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(preferences))
+    showStatus('success', 'Preferências salvas com sucesso!')
   }
 
   return (
     <section className="config-page">
-      <div className="d-flex flex-wrap justify-content-between align-items-start gap-2">
-        <div>
-          <h2 className="page-title">Configurações</h2>
-          <p className="page-subtitle">
-            Gerencie seu acesso, notificações e privacidade da conta.
-          </p>
-        </div>
-
-        <span className="config-badge">
-          <i className="bi bi-shield-check" /> Conta ativa
-        </span>
-      </div>
-
-      {feedback && (
-        <div
-          className={`alert alert-${feedback.type} config-alert d-flex align-items-center gap-2`}
-          role="alert"
-        >
-          <i
-            className={`bi ${
-              feedback.type === 'success'
-                ? 'bi-check-circle-fill'
-                : 'bi-exclamation-triangle-fill'
-            }`}
-          />
-          <span>{feedback.text}</span>
-        </div>
-      )}
-
-      <div className="row g-3 justify-content-center">
-        <div className="col-xl-7 d-flex flex-column gap-3">
-          <article className="panel">
-            <div className="panel-header-row">
-              <div>
-                <h3 className="panel-title mb-1">Acesso à Conta</h3>
-                <p className="small muted mb-0">
-                  E-mail utilizado para login e recebimento de avisos importantes.
-                </p>
-              </div>
-              <span className="stat-icon">
-                <i className="bi bi-envelope-at" />
-              </span>
+      <div className="row justify-content-center">
+        <div className="col-12 col-md-9 col-lg-7 col-xl-5 d-flex flex-column gap-3">
+          {feedback && (
+            <div
+              className={`alert alert-${feedback.type} config-alert d-flex align-items-center gap-2 mb-0`}
+              role="alert"
+            >
+              <i
+                className={`bi ${
+                  feedback.type === 'success'
+                    ? 'bi-check-circle-fill'
+                    : 'bi-exclamation-triangle-fill'
+                }`}
+              />
+              <span>{feedback.text}</span>
             </div>
-
-            <form onSubmit={handleSaveEmail} className="row g-3 mt-1">
-              <div className="col-12">
-                <label className="form-label config-label">E-mail de login</label>
-                <input
-                  type="email"
-                  className="form-control config-input"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="col-12 d-flex justify-content-end mt-3">
-                <button type="submit" className="primary-button">
-                  <i className="bi bi-check2 me-1" /> Atualizar e-mail
-                </button>
-              </div>
-            </form>
-          </article>
+          )}
 
           <article className="panel">
             <div className="panel-header-row">
               <div>
-                <h3 className="panel-title mb-1">Alterar Senha</h3>
+                <h3 className="panel-title mb-1">Preferências</h3>
                 <p className="small muted mb-0">
-                  Mantenha sua conta protegida com uma senha forte.
+                  Defina avisos da plataforma e aparência da interface.
                 </p>
               </div>
               <span className="stat-icon">
-                <i className="bi bi-key" />
+                <i className="bi bi-sliders" />
               </span>
             </div>
 
-            <form onSubmit={handleSavePassword} className="row g-3 mt-1">
-              <div className="col-12">
-                <label className="form-label config-label">Senha atual</label>
-                <input
-                  type="password"
-                  name="senhaAtual"
-                  placeholder="Digite sua senha atual"
-                  className="form-control config-input"
-                  value={passwordData.senhaAtual}
-                  onChange={handlePasswordChange}
-                />
+            <div className="toggle-list mt-3">
+              <div className="toggle-item">
+                <div>
+                  <strong>Alertas de tarefas</strong>
+                  <small>Avisar quando uma nova tarefa for atribuída ou vencer em breve.</small>
+                </div>
+                <div className="form-check form-switch m-0">
+                  <input
+                    className="form-check-input config-switch"
+                    type="checkbox"
+                    checked={preferences.notificacoesTarefas}
+                    onChange={() => handleToggle('notificacoesTarefas')}
+                  />
+                </div>
               </div>
 
-              <div className="col-md-6">
-                <label className="form-label config-label">Nova senha</label>
-                <input
-                  type="password"
-                  name="novaSenha"
-                  placeholder="Mínimo de 6 caracteres"
-                  className="form-control config-input"
-                  value={passwordData.novaSenha}
-                  onChange={handlePasswordChange}
-                />
+              <div className="toggle-item">
+                <div>
+                  <strong>Lembrete de ofensiva</strong>
+                  <small>Receber lembrete diário para manter sua sequência ativa.</small>
+                </div>
+                <div className="form-check form-switch m-0">
+                  <input
+                    className="form-check-input config-switch"
+                    type="checkbox"
+                    checked={preferences.lembretesOfensiva}
+                    onChange={() => handleToggle('lembretesOfensiva')}
+                  />
+                </div>
               </div>
 
-              <div className="col-md-6">
-                <label className="form-label config-label">Confirmar nova senha</label>
-                <input
-                  type="password"
-                  name="confirmarSenha"
-                  placeholder="Repita a nova senha"
-                  className="form-control config-input"
-                  value={passwordData.confirmarSenha}
-                  onChange={handlePasswordChange}
-                />
+              <div className="toggle-item">
+                <div>
+                  <strong>Evolução do mascote</strong>
+                  <small>Notificar quando seu dragão ganhar XP ou evoluir.</small>
+                </div>
+                <div className="form-check form-switch m-0">
+                  <input
+                    className="form-check-input config-switch"
+                    type="checkbox"
+                    checked={preferences.evolucaoMascote}
+                    onChange={() => handleToggle('evolucaoMascote')}
+                  />
+                </div>
               </div>
 
-              <div className="col-12 d-flex justify-content-end mt-3">
-                <button type="submit" className="secondary-button">
-                  <i className="bi bi-lock me-1" /> Salvar nova senha
-                </button>
+              <div className="toggle-item">
+                <div>
+                  <strong>Tema escuro</strong>
+                  <small>Alterna a interface entre modo claro e modo escuro.</small>
+                </div>
+                <div className="form-check form-switch m-0">
+                  <input
+                    className="form-check-input config-switch"
+                    type="checkbox"
+                    checked={preferences.temaEscuro}
+                    onChange={() => handleToggle('temaEscuro')}
+                  />
+                </div>
               </div>
-            </form>
-          </article>
-        </div>
-        
-        <div className="col-xl-7 d-flex flex-column gap-3">
-          <article className="panel">
-            <h3 className="panel-title mb-2">Privacidade e Sessão</h3>
-            <div className="danger-box">
-              <div>
-                <strong>Encerrar sessão</strong>
-                <small>Desconectar sua conta deste navegador com segurança.</small>
-              </div>
+            </div>
+
+            <div className="d-flex justify-content-end mt-3">
               <button
                 type="button"
-                className="danger-outline-button"
-                onClick={() => showStatus('success', 'Sessão encerrada (simulação).')}
+                className="primary-button w-100"
+                onClick={handleSavePreferences}
               >
-                <i className="bi bi-box-arrow-right me-1" /> Sair
-                </button>
-              </div>
-            </article>
-          </div>
+                Salvar preferências
+              </button>
+            </div>
+          </article>
         </div>
+      </div>
     </section>
   )
 }

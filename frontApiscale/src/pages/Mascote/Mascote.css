@@ -495,3 +495,78 @@
     padding: 18px;
   }
 }
+
+/* =========================================
+   TEMA ESCURO - MASCOTE
+========================================= */
+[data-theme='dark'] .mascote-page,
+body.dark-theme .mascote-page {
+  color: #f1f5f9;
+}
+
+[data-theme='dark'] .dragon-evolution-card,
+body.dark-theme .dragon-evolution-card {
+  background: linear-gradient(120deg, #131c2e, #17243a);
+  border-color: #24354e;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme='dark'] .evolution-heading h3,
+body.dark-theme .evolution-heading h3 {
+  color: #f8fafc;
+}
+
+[data-theme='dark'] .evolution-percentage,
+body.dark-theme .evolution-percentage {
+  color: #60a5fa;
+}
+
+[data-theme='dark'] .evolution-details,
+body.dark-theme .evolution-details {
+  color: #94a3b8;
+}
+
+[data-theme='dark'] .dragon-evolution-progress,
+body.dark-theme .dragon-evolution-progress {
+  background: #1e2c40;
+}
+
+[data-theme='dark'] .dragon-evolution-card > p,
+body.dark-theme .dragon-evolution-card > p {
+  color: #94a3b8;
+}
+
+[data-theme='dark'] .dragon-detail-card,
+body.dark-theme .dragon-detail-card {
+  border-color: #24354e;
+  background: rgba(19, 28, 46, 0.88);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme='dark'] .dragon-detail-card strong,
+body.dark-theme .dragon-detail-card strong {
+  color: #f8fafc;
+}
+
+[data-theme='dark'] .dragon-detail-card small,
+body.dark-theme .dragon-detail-card small {
+  color: #94a3b8;
+}
+
+[data-theme='dark'] .detail-icon,
+body.dark-theme .detail-icon {
+  background: #1c2b42;
+  color: #60a5fa;
+}
+
+[data-theme='dark'] .detail-icon.teal,
+body.dark-theme .detail-icon.teal {
+  background: #103332;
+  color: #2dd4bf;
+}
+
+[data-theme='dark'] .detail-icon.purple,
+body.dark-theme .detail-icon.purple {
+  background: #291e45;
+  color: #c084fc;
+}

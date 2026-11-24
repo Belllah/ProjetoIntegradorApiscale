@@ -13,6 +13,108 @@
   max-width: 1280px;
 }
 
+/* ========================================
+   TEMA ESCURO - PERFIL
+======================================== */
+[data-theme='dark'] .profile-page,
+body.dark-theme .profile-page {
+  --profile-tint: #1b283d;
+  --profile-border: #24354d;
+  --profile-ink: #f1f5f9;
+  --profile-muted: #94a3b8;
+  --profile-card: #131c2e;
+}
+
+[data-theme='dark'] .profile-hero-card,
+body.dark-theme .profile-hero-card,
+[data-theme='dark'] .profile-card,
+body.dark-theme .profile-card,
+[data-theme='dark'] .profile-page .stat-card,
+body.dark-theme .profile-page .stat-card {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme='dark'] .profile-alert,
+body.dark-theme .profile-alert {
+  background: #0f3123;
+  border-color: #175239;
+  color: #6ee7b7;
+}
+
+[data-theme='dark'] .profile-pill.soft,
+body.dark-theme .profile-pill.soft {
+  background: #36220f;
+  color: #fb923c;
+}
+
+[data-theme='dark'] .btn-profile-ghost,
+body.dark-theme .btn-profile-ghost {
+  border-color: #2d3f58;
+  background: #172337;
+  color: #f1f5f9;
+}
+
+[data-theme='dark'] .btn-profile-ghost:hover,
+body.dark-theme .btn-profile-ghost:hover {
+  background: #20314c;
+}
+
+[data-theme='dark'] .btn-logout,
+body.dark-theme .btn-logout {
+  border-color: #5c1d24;
+  background: #2b1114;
+  color: #f87171;
+}
+
+[data-theme='dark'] .btn-logout:hover,
+body.dark-theme .btn-logout:hover {
+  background: #b42318;
+  border-color: #b42318;
+  color: #ffffff;
+}
+
+[data-theme='dark'] .info-item,
+body.dark-theme .info-item,
+[data-theme='dark'] .info-bio,
+body.dark-theme .info-bio,
+[data-theme='dark'] .logout-divider,
+body.dark-theme .logout-divider {
+  border-color: #1f2f45;
+}
+
+[data-theme='dark'] .info-bio p,
+body.dark-theme .info-bio p {
+  color: #cbd5e1;
+}
+
+[data-theme='dark'] .form-field input,
+body.dark-theme .form-field input,
+[data-theme='dark'] .form-field textarea,
+body.dark-theme .form-field textarea {
+  border-color: #273850;
+  background: #172337;
+  color: #f1f5f9;
+}
+
+[data-theme='dark'] .form-field input:focus,
+body.dark-theme .form-field input:focus,
+[data-theme='dark'] .form-field textarea:focus,
+body.dark-theme .form-field textarea:focus {
+  background: #1b283e;
+}
+
+[data-theme='dark'] .timeline-item,
+body.dark-theme .timeline-item {
+  background: #162235;
+  border-color: #22344c;
+}
+
+[data-theme='dark'] .skill-chip,
+body.dark-theme .skill-chip {
+  background: #1c2b42;
+  color: #93c5fd;
+}
+
 /* Alerta de confirmação */
 .profile-alert {
   display: flex;
