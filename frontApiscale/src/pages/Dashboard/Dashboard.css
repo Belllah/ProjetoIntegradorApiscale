@@ -1,9 +1,4 @@
 
-/* ==========================================
-   DASHBOARD - APISCALE
-   Tema principal: Light / Glassmorphism
-========================================== */
-
 .dashboard-page {
   --dash-primary: #1B39AD;
   --dash-blue: #457CFF;
@@ -16,6 +11,80 @@
 
   color: var(--dash-text);
   animation: dashboardFade .5s ease;
+}
+
+[data-theme='dark'] .dashboard-page,
+body.dark-theme .dashboard-page {
+  --dash-primary: #3b82f6;
+  --dash-blue: #60a5fa;
+  --dash-secondary: #14b8a6;
+  --dash-tertiary: #38bdf8;
+  --dash-dark: #f8fafc;
+  --dash-text: #f1f5f9;
+  --dash-muted: #94a3b8;
+  --dash-background: #0b111e;
+}
+
+[data-theme='dark'] .dashboard-page .level-pill,
+body.dark-theme .dashboard-page .level-pill {
+  border-color: rgba(69, 124, 255, 0.35);
+  background: #131f33;
+  color: #60a5fa;
+}
+
+[data-theme='dark'] .dashboard-page .chart-panel,
+body.dark-theme .dashboard-page .chart-panel {
+  background: rgba(19, 28, 46, 0.85);
+  border-color: rgba(69, 124, 255, 0.25);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme='dark'] .chart-description,
+body.dark-theme .chart-description {
+  color: #94a3b8;
+}
+
+[data-theme='dark'] .dashboard-page .task-row,
+body.dark-theme .dashboard-page .task-row {
+  border-bottom-color: rgba(69, 124, 255, 0.18);
+}
+
+[data-theme='dark'] .dashboard-page .achievement,
+body.dark-theme .dashboard-page .achievement {
+  border-bottom-color: rgba(69, 124, 255, 0.18);
+}
+
+[data-theme='dark'] .dashboard-page .achievement > b,
+body.dark-theme .dashboard-page .achievement > b {
+  color: #60a5fa;
+}
+
+[data-theme='dark'] .dashboard-page .progress,
+body.dark-theme .dashboard-page .progress {
+  background: #1c2b42;
+}
+
+[data-theme='dark'] .dashboard-task-priority,
+body.dark-theme .dashboard-task-priority {
+  background: #1e2c40;
+  color: #cbd5e1;
+}
+
+[data-theme='dark'] .dashboard-task-status,
+body.dark-theme .dashboard-task-status {
+  background: rgba(69, 124, 255, 0.22);
+  color: #93c5fd;
+}
+
+[data-theme='dark'] .dashboard-empty,
+body.dark-theme .dashboard-empty {
+  color: #94a3b8;
+}
+
+[data-theme='dark'] .dashboard-page .chart-placeholder,
+body.dark-theme .dashboard-page .chart-placeholder {
+  background: linear-gradient(145deg, rgba(69, 124, 255, 0.08), rgba(0, 150, 148, 0.06));
+  border-color: rgba(69, 124, 255, 0.35);
 }
 
 /* ==========================================

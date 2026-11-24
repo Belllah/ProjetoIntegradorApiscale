@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route , Navigate} from 'react-router-dom'
 import { UserProvider } from './context/UserContext'
+import { ThemeProvider } from './context/ThemeContext'
 import Layout from './components/Layout/Layout.jsx'
 import Dashboard from './pages/Dashboard/Dashboard.jsx'
 import Mascote from './pages/Mascote/Mascote.jsx'
@@ -10,22 +11,24 @@ import Configuracoes from './pages/Configuracoes/Configuracoes.jsx'
 
 function App() {
   return (
-    <UserProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route element={<Layout />}>
-            <Route path="/" element={<Dashboard />}/>
-            <Route path="/mascote" element={<Mascote />}/>
-            <Route path="/equipes" element={<Equipes />}/>
-            <Route path="/tarefas" element={<Tarefas />}/>
-            <Route path="/perfil" element={<Perfil />}/>
-            <Route path="/configuracoes" element={<Configuracoes />}/>
-            <Route path="*" element={<Navigate to="/" replace/>}/>
+    <ThemeProvider>
+      <UserProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<Layout />}>
+              <Route path="/" element={<Dashboard />}/>
+              <Route path="/mascote" element={<Mascote />}/>
+              <Route path="/equipes" element={<Equipes />}/>
+              <Route path="/tarefas" element={<Tarefas />}/>
+              <Route path="/perfil" element={<Perfil />}/>
+              <Route path="/configuracoes" element={<Configuracoes />}/>
+              <Route path="*" element={<Navigate to="/" replace/>}/>
 
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </UserProvider>
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </UserProvider>
+    </ThemeProvider>
   )
 }
 

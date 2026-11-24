@@ -2,8 +2,10 @@
 import { Doughnut } from 'react-chartjs-2'
 import './Charts.css'
 import './chartConfig'
+import { useTheme } from '../../context/ThemeContext'
 
 export default function TasksChart({ tarefasPorStatus }) {
+  const { isDark } = useTheme()
 
   const data = {
     labels: tarefasPorStatus?.labels || [],
@@ -27,7 +29,7 @@ export default function TasksChart({ tarefasPorStatus }) {
         ],
 
         borderWidth: 3,
-        borderColor: '#FFFFFF',
+        borderColor: isDark ? '#131c2e' : '#FFFFFF',
 
         hoverOffset: 8
       }
@@ -45,7 +47,7 @@ export default function TasksChart({ tarefasPorStatus }) {
         position: 'bottom',
 
         labels: {
-          color: '#334155',
+          color: isDark ? '#E2E8F0' : '#334155',
           usePointStyle: true,
           pointStyle: 'circle',
           padding: 22,

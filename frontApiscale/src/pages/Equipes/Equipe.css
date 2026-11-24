@@ -175,3 +175,95 @@
   box-shadow: 0 20px 35px rgba(15, 23, 42, 0.2);
 }
 
+/* ========================================
+   TEMA ESCURO - EQUIPES
+======================================== */
+[data-theme='dark'] .equipe-tab-btn,
+body.dark-theme .equipe-tab-btn {
+  background: #131c2e;
+  border-color: #23344d;
+  color: #94a3b8;
+}
+
+[data-theme='dark'] .equipe-tab-btn:hover,
+body.dark-theme .equipe-tab-btn:hover {
+  border-color: #3b82f6;
+  color: #60a5fa;
+}
+
+[data-theme='dark'] .equipe-tab-btn.active,
+body.dark-theme .equipe-tab-btn.active {
+  background: #1d4ed8;
+  color: #ffffff;
+  border-color: #1d4ed8;
+}
+
+[data-theme='dark'] .team-selector-card,
+body.dark-theme .team-selector-card {
+  border-color: #23344d;
+  background: #131c2e;
+  color: #f1f5f9;
+}
+
+[data-theme='dark'] .team-selector-card:hover,
+body.dark-theme .team-selector-card:hover {
+  border-color: #3b82f6;
+  background: #18243b;
+}
+
+[data-theme='dark'] .team-selector-card.selected,
+body.dark-theme .team-selector-card.selected {
+  border-color: #3b82f6;
+  background: #172947;
+}
+
+[data-theme='dark'] .member-mini-card,
+body.dark-theme .member-mini-card,
+[data-theme='dark'] .company-member-card,
+body.dark-theme .company-member-card {
+  border-color: #23344d;
+  background: #131c2e;
+  color: #f1f5f9;
+}
+
+[data-theme='dark'] .member-mini-card:hover,
+body.dark-theme .member-mini-card:hover,
+[data-theme='dark'] .company-member-card:hover,
+body.dark-theme .company-member-card:hover {
+  border-color: #3b82f6;
+  background: #18243b;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme='dark'] .status-dot,
+body.dark-theme .status-dot {
+  border-color: #131c2e;
+}
+
+[data-theme='dark'] .streak-badge,
+body.dark-theme .streak-badge {
+  background: #36220f;
+  color: #fb923c;
+}
+
+[data-theme='dark'] .team-chat-box,
+body.dark-theme .team-chat-box {
+  background: #0f1624;
+  border-color: #202f46;
+}
+
+[data-theme='dark'] .chat-msg,
+body.dark-theme .chat-msg {
+  background: #152033;
+  border-color: #24354f;
+  color: #f1f5f9;
+}
+
+[data-theme='dark'] .custom-modal-card,
+body.dark-theme .custom-modal-card {
+  background: #131c2e;
+  border: 1px solid #283a54;
+  color: #f1f5f9;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
+}
+
